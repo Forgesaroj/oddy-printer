@@ -8,92 +8,117 @@ mixed version (best for local reach).
 
 ## 🟢 VERSION 1 — Relatable long-form (recommended)
 
-🇳🇵 Tired of fighting Microsoft Word every time you need to print
-MRP labels on Oddy sticker sheets?
+🇳🇵 Nepal government ले April 28, 2026 देखि MRP (Maximum Retail
+Price) sticker compulsory बनाएको छ। हरेक product मा printed MRP
+label चाहिन्छ — Consumer Protection Act 2019, Section 6(3) अन्तर्गत।
 
-You're not alone.
+But here's the real problem nobody is talking about:
 
-Every shopkeeper, every small business owner, every mom-and-pop
-store in Nepal has gone through the same thing:
+**हरेक shopkeeper लाई अब stickers print गर्नु पर्छ। तर कसरी?**
+
+Every shopkeeper, every small business, every mom-and-pop store
+in Nepal is now facing the same headache:
 
 ✗ Bought a packet of Oddy ST-24 / ST-33 / ST-65 stickers
-✗ Opened Word, hunted for "Avery L7159" or some random template
-✗ Printed a test page → labels off by 2mm → wasted a full sheet
-✗ Tried again. And again. Margins still wrong.
-✗ Gave up and wrote prices by hand with a marker.
+✗ Opened Microsoft Word, hunted for "Avery L7159" template
+✗ Printed a test sheet → labels off by 2mm → wasted ₹50
+✗ Tried again. Margins still wrong. Wasted another sheet.
+✗ Gave up. Wrote MRP by hand with a marker. (Now illegal.)
 
-I built a free tool that fixes this. One page. Open in browser.
-Pick your Oddy SKU code (printed on the pack — ST-24, ST-33,
-ST-48, etc.). Type your content. Print.
+I built a free tool that fixes this. **One page. Open in browser.
+Pick your Oddy SKU code from the pack (ST-24, ST-33, ST-48, etc.).
+Type your shop name, MRP, mfg date. Print. Done.**
 
-✅ All 21 Oddy A4 SKUs pre-configured with exact dimensions
-✅ Works with Epson, Canon, HP, any A4 printer
-✅ Save your content (shop name, address, MRP format) — reuse anytime
-✅ Live preview as you type — no wasted sheets
-✅ Print 33 different items on one ST-33 sheet, all different prices
-✅ 100% free, no signup, no app to install, works offline
+✅ All 21 Oddy A4 SKUs pre-configured — exact dimensions from
+   Oddy's official spec sheet
+✅ Works with Epson, Canon, HP, Brother — any A4 printer
+✅ Save your MRP template once (shop name + format) — reuse forever
+✅ Live preview as you type — no more wasted sheets
+✅ Print 33 different MRP labels on ONE ST-33 sheet — different
+   prices, different items, all in one go
+✅ CSV bulk import — paste an Excel sheet with 84 products, print
+   84 different MRP labels in one click
+✅ 100% free. No signup. No app. Works offline.
 
-Made specifically for Nepal's MRP labelling requirement.
+This is the law now. आफ्नो दुकानलाई कानूनी बनाउनुहोस्। मार्करले
+लेखेर अब चल्दैन। Print गर्नुहोस् — free मा।
 
-🔗 https://forgesaroj.github.io/oddy-printer/
+🔗 **https://forgesaroj.github.io/oddy-printer/**
 
-Share with any shopkeeper friend who's still printing labels the
-hard way. साथीहरूलाई share गर्नुहोस् 🙏
+Share with every shopkeeper, retailer, wholesaler you know.
+एउटा साथीको ₹500–1000 sticker wastage र hours of headache बच्छ।
+साथीहरूलाई share गर्नुहोस् 🙏
 
 Made with ❤️ in Nepal · Sahara Labs · Saroj Rijal
 
-#Nepal #SmallBusiness #MRP #Sahara #MadeInNepal #नेपाल
-#OddyLabels #StickerPrinting #FreeTools #व्यापार
+#Nepal #MRPNepal #ConsumerProtectionAct #SmallBusiness #MadeInNepal
+#नेपाल #OddyLabels #StickerPrinting #FreeTools #व्यापार
+#Shopkeeper #KathmanduBusiness #SaharaLabs
 
 ---
 
 ## 🟡 VERSION 2 — Short and punchy (good for shares)
 
-🇳🇵 If you've ever bought an Oddy sticker sheet and wasted 3 pages
-trying to align labels in Word — this is for you.
+🇳🇵 MRP sticker अब compulsory छ (April 28, 2026 देखि).
+Customs मा माल अड्किरहेको छ। Shop मा product पनि अड्किनेछ।
 
-Free browser tool. All 21 Oddy SKUs ready. Type → Print. Done.
+Free browser tool. All 21 Oddy sticker SKUs ready.
+Open → Type MRP → Print. Done.
 
 → https://forgesaroj.github.io/oddy-printer/
 
-No app. No signup. No cost. Just works.
+No app. No signup. No cost. कुनै झन्झट छैन।
 
-Made for Nepali shopkeepers who need MRP labels without the headache.
+Made for every Nepali shopkeeper. Share गर्नुहोस् ❤️
 
-Share with anyone who prints stickers ❤️
-
-#MadeInNepal #SmallBusiness #MRP #Sahara #FreeForAll
+#MRPNepal #MadeInNepal #SmallBusiness #व्यापार #SaharaLabs
 
 ---
 
 ## 🔵 VERSION 3 — Nepali-mixed (best for local reach)
 
-🇳🇵 Oddy sticker sheet print गर्न हरेक पटक tension?
+🇳🇵 **MRP Sticker अब Compulsory!**
 
-ST-24, ST-33, ST-65 — कुन template? Word मा कति margin?
-प्रिन्ट गर्दा labels off हुन्छ। फेरि sheet wastage।
-यो problem हरेक नेपाली व्यापारीले face गरेको छ।
+Nepal Sarkar ले April 28, 2026 बाट हरेक product मा Maximum
+Retail Price (MRP) label compulsory गरेको छ। Consumer
+Protection Act 2019, Section 6(3) अन्तर्गत।
 
-म Saroj Rijal ले एउटा free tool बनाएको छु — सबै 21 Oddy SKUs
-already setup गरिएको। Browser मा खोल्नुहोस्, content type
-गर्नुहोस्, print दबाउनुहोस्। बस्।
+अब हरेक व्यापारीलाई एउटै tension छ:
+
+❓ कुन Oddy sticker template use गर्ने?
+❓ ST-24, ST-33, ST-65 — कति margin?
+❓ Word मा align नहुने, print गर्दा 2mm off, sheet wastage।
+❓ Marker ले लेख्न त अब कानूनले मनाही गर्छ।
+
+म Saroj Rijal ले एउटा completely free tool बनाएको छु, सबै
+नेपाली व्यापारीहरूको लागि। सबै 21 Oddy A4 SKUs already setup
+गरिएको — official Oddy spec बमोजिम exact dimensions।
+
+**बस् 3 step:**
+1️⃣ Browser मा खोल्नुहोस्
+2️⃣ आफ्नो Oddy code (pack मा लेखेको — ST-24 etc.) select गर्नुहोस्
+3️⃣ MRP, shop name, date type गरेर Print दबाउनुहोस्
 
 ✅ Live preview — टाइप गर्दा साथसाथै देख्न पाइन्छ
-✅ Content save हुन्छ — फेरि type गर्नु पर्दैन
-✅ MRP, price tag, address label, barcode — सबै काम लाग्ने
+✅ Content save हुन्छ — एक चोटि type, हजार पटक print
+✅ MRP label, price tag, address, barcode — सबैको लागि
 ✅ Epson, Canon, HP — कुनै पनि A4 printer मा काम गर्छ
-✅ कुनै cost छैन, signup छैन, app install गर्नु पर्दैन
+✅ CSV उपयोग गरेर Excel sheet बाट direct import
+✅ कुनै cost छैन, signup छैन, internet नभए पनि चल्छ
+✅ कुनै data साझा हुँदैन — सबै तपाईंको browser मा मात्र
 
-🇳🇵 Made in Nepal · 🇳🇵 For All Nepalis · Free Forever
+🇳🇵 **Made in Nepal · For All Nepalis · Forever Free**
 
 🔗 https://forgesaroj.github.io/oddy-printer/
 
-व्यापारी साथीहरूलाई share गर्नुहोस्। एउटा भाइ-बहिनीको पैसा र समय
-बच्नेछ। 🙏
+व्यापारी साथी, shopkeeper दाइ-दिदी, retailer-wholesaler सबैलाई
+share गर्नुहोस्। एउटा भाइ-बहिनीको ₹500-1000 sticker wastage र
+घण्टौंको headache बच्नेछ। 🙏
 
 — Sahara Labs · Saroj Rijal
 
-#नेपाल #व्यापार #MadeInNepal #MRP #SmallBusiness #SaharaLabs
+#नेपाल #MRPNepal #ConsumerProtectionAct #व्यापार #MadeInNepal
+#SmallBusiness #SaharaLabs #Shopkeeper #OddyLabels
 
 ---
 

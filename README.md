@@ -15,16 +15,26 @@ Made in Nepal for the MRP labelling system that every shop now needs.
 
 ## The problem this solves
 
-Every shopkeeper, every small business in Nepal has been through this:
+**As of April 28, 2026, the Nepal Government has made printed MRP
+(Maximum Retail Price) labels compulsory on every product sold in
+the country** — under the Consumer Protection Act 2019, Section 6(3).
+Customs offices in Birgunj, Bhairahawa, Biratnagar, Rasuwagadhi,
+Nepalgunj and Kakarbhitta started stopping shipments without MRP
+stickers, stranding over 1,000 containers at border points within
+days of the rule taking effect. Writing prices by hand with a marker
+is no longer legally acceptable.
+
+So now every shopkeeper, every retailer, every small business in
+Nepal is suddenly facing the same headache:
 
 - You buy a packet of Oddy stickers — **ST-24, ST-33, ST-48, ST-65**, whichever
-- You open MS Word and search for "Avery L7159" or "33 labels per sheet"
+- You open MS Word and hunt for "Avery L7159" or "33 labels per sheet"
 - You guess at margins. You print a test page. Labels are 2mm off.
-- You waste 3 sheets. You give up. You write prices by hand with a marker.
+- You waste 3 sheets (₹500–1000 down the drain). You try again.
+- Eventually you give up and tell your supplier to print them somehow.
 
-Now with Nepal's MRP (Maximum Retail Price) rules requiring printed
-labels on every product sold in retail, this happens **every single day**
-in shops across the country.
+This is happening **every single day** in shops across the country —
+and the printed-label requirement isn't going away.
 
 This tool fixes it. **Pick your Oddy code → type your content → print.**
 The exact margins and pitches from the official Oddy spec sheet are
