@@ -1,0 +1,1439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Oddy Sticker Printer</title>
+<style>
+  @page { size: A4; margin: 0; }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: #eef0f4; color: #1a1d24;
+    font-family: "Inter","Segoe UI","Helvetica","Arial",sans-serif;
+    -webkit-print-color-adjust: exact; print-color-adjust: exact;
+  }
+
+  /* ============== SETUP FORM (screen only) ============== */
+  .form-wrap {
+    max-width: 1600px; margin: 20px auto; padding: 0 16px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 560px;
+    gap: 16px;
+    align-items: start;
+  }
+  @media (max-width: 1200px) {
+    .form-wrap { grid-template-columns: 1fr; }
+    .preview-pane { position: static !important; max-height: none !important; }
+  }
+  .form-card {
+    background: #fff; border-radius: 10px; padding: 18px 20px;
+    box-shadow: 0 4px 18px rgba(0,0,0,.08);
+    min-width: 0;
+    font-size: 13px;
+  }
+  .form-card .field input,
+  .form-card .field select,
+  .form-card .field textarea { font-size: 13px; padding: 7px 9px; }
+  .form-card h1 { font-size: 19px; }
+  .form-card h2 { margin: 18px 0 8px; font-size: 12px; }
+  .form-card .btn { font-size: 13px; padding: 8px 14px; }
+  .form-card .btn-sm { font-size: 12px; padding: 5px 10px; }
+
+  /* ----- Live preview pane (right side, sticky) ----- */
+  .preview-pane {
+    position: sticky; top: 16px;
+    background: #fff; border-radius: 10px; padding: 14px;
+    box-shadow: 0 4px 18px rgba(0,0,0,.08);
+    max-height: calc(100vh - 32px);
+    overflow: auto;
+  }
+  .preview-pane h3 {
+    margin: 0 0 8px; font-size: 12px; text-transform: uppercase;
+    letter-spacing: 1px; color: #5d6679;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .preview-pane h3 .badge {
+    font-size: 10px; background: #eef2ff; color: #3158b0;
+    padding: 2px 8px; border-radius: 999px; letter-spacing: 0;
+    text-transform: none; font-weight: 600;
+  }
+  .preview-stage {
+    background: #f4f5f8; border-radius: 6px;
+    display: block; overflow: hidden;
+    position: relative;
+  }
+  /* The preview is a real A4 sheet scaled down. We use CSS transform
+     so absolute mm positions inside it still match the print engine. */
+  .preview-sheet {
+    width: 210mm; height: 297mm;
+    background: #fff; position: relative; overflow: hidden;
+    box-shadow: 0 0 0 1px #cdd2dd, 0 2px 8px rgba(0,0,0,.08);
+    /* Scaled to fit a ~320px wide column.
+       210mm ≈ 794px at 96dpi, so scale ≈ 320/794 ≈ 0.403 */
+    transform: scale(var(--prev-scale, 0.40));
+    transform-origin: top left;
+    flex-shrink: 0;
+  }
+  .preview-stage {
+    /* reserve space for scaled sheet */
+    height: calc(297mm * var(--prev-scale, 0.40));
+    width:  calc(210mm * var(--prev-scale, 0.40));
+    align-items: flex-start;
+    padding: 0;
+    margin: 0 auto;
+  }
+  .preview-pane .ctrl-row {
+    display: flex; gap: 8px; align-items: center; margin-bottom: 8px;
+    font-size: 12px; color: #5d6679;
+  }
+  .preview-pane .ctrl-row input[type=range] { flex: 1; }
+  .preview-meta {
+    font-size: 11px; color: #5d6679; margin-top: 8px;
+    line-height: 1.4;
+  }
+  .preview-pager {
+    display: flex; gap: 6px; align-items: center; justify-content: center;
+    margin-top: 8px;
+  }
+  .preview-pager button {
+    font: inherit; font-size: 12px; padding: 4px 10px;
+    border: 1px solid #cdd2dd; background: #fff; border-radius: 4px;
+    cursor: pointer;
+  }
+  .preview-pager button:disabled { opacity: .4; cursor: not-allowed; }
+  .preview-pager span { font-size: 12px; color: #5d6679; }
+  h1 { margin: 0 0 4px; font-size: 22px; }
+  h1 small { font-weight: 400; opacity: .7; font-size: 13px; }
+  h2 { margin: 22px 0 10px; font-size: 13px; text-transform: uppercase;
+       letter-spacing: 1px; color: #5d6679; border-bottom: 1px solid #e5e8ef;
+       padding-bottom: 6px; }
+  .row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px 22px; }
+  .row.cols-3 { grid-template-columns: repeat(3, 1fr); }
+  .row.cols-4 { grid-template-columns: repeat(4, 1fr); }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field label { font-size: 12px; font-weight: 600; color: #3b4150; }
+  .field input, .field select, .field textarea {
+    font: inherit; font-size: 14px; padding: 8px 10px;
+    border: 1px solid #cdd2dd; border-radius: 6px; background: #fff;
+    color: #1a1d24;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus {
+    outline: 2px solid #2a7f4f; border-color: #2a7f4f;
+  }
+  .field textarea { min-height: 70px; resize: vertical; font-family: inherit; }
+  .field .hint { font-size: 11px; color: #6b7280; }
+
+  .panel { background: #f7f8fb; border-radius: 8px; padding: 12px 14px; }
+
+  /* Content library */
+  .lib-grid { display: grid; gap: 8px; grid-template-columns: 1fr 1fr; }
+  @media (max-width: 900px) { .lib-grid { grid-template-columns: 1fr; } }
+  .lib-item {
+    background: #fff; border: 1px solid #cdd2dd; border-radius: 7px;
+    padding: 10px 12px; display: flex; flex-direction: column; gap: 6px;
+    position: relative;
+  }
+  .lib-item .lib-title { font-weight: 700; font-size: 13px; color: #1a1d24; }
+  .lib-item .lib-body  { font-size: 11.5px; color: #5d6679; line-height: 1.35;
+    max-height: 38px; overflow: hidden; }
+  .lib-item .lib-meta  { font-size: 10.5px; color: #8a92a3; }
+  .lib-item .lib-actions { display: flex; gap: 6px; flex-wrap: wrap; }
+  .lib-item .lib-actions button {
+    font: inherit; font-size: 11.5px; padding: 3px 8px; border-radius: 4px;
+    border: 1px solid #cdd2dd; background: #fff; cursor: pointer;
+  }
+  .lib-item .lib-actions button:hover { background: #eef2ff; }
+  .lib-item .lib-actions .danger { color: #b1331f; border-color: #f2cfc6; }
+  .lib-item.empty { color: #8a92a3; font-style: italic; text-align: center; padding: 16px; }
+
+  /* Queue */
+  .queue-list { display: flex; flex-direction: column; gap: 6px; }
+  .queue-row {
+    display: grid; grid-template-columns: 28px 1fr 90px 60px;
+    gap: 8px; align-items: center;
+    background: #fff; padding: 8px 10px; border: 1px solid #cdd2dd; border-radius: 6px;
+  }
+  .queue-row .idx { font-weight: 700; color: #5d6679; }
+  .queue-row .name { font-size: 13px; }
+  .queue-row .count { font-size: 12px; }
+  .queue-row .count input { width: 70px; }
+  .queue-row button { font: inherit; font-size: 11px; padding: 4px 8px;
+    border-radius: 4px; border: 1px solid #f2cfc6; background: #fff;
+    color: #b1331f; cursor: pointer; }
+  .queue-empty { color: #8a92a3; font-style: italic; font-size: 13px; padding: 8px 4px; }
+  .queue-total { font-size: 12px; color: #5d6679; margin-top: 6px; }
+
+  .preset-row { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .preset-row button {
+    font: inherit; font-size: 12px; padding: 4px 10px;
+    border: 1px solid #cdd2dd; background: #fff; border-radius: 999px; cursor: pointer;
+  }
+  .preset-row button:hover { background: #eef2ff; border-color: #6b7adb; }
+
+  .actions { margin-top: 22px; display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn {
+    font: inherit; font-size: 14px; padding: 10px 18px;
+    border-radius: 7px; border: none; cursor: pointer; font-weight: 600;
+  }
+  .btn-primary  { background: #2a7f4f; color: #fff; }
+  .btn-primary:hover { background: #1f6940; }
+  .btn-secondary{ background: #e5e8ef; color: #1a1d24; }
+  .btn-secondary:hover { background: #d4d9e4; }
+  .btn-alt      { background: #3158b0; color: #fff; }
+  .btn-alt:hover{ background: #244790; }
+  .btn-sm       { padding: 6px 12px; font-size: 12.5px; }
+
+  details summary { cursor: pointer; font-size: 13px; color: #3158b0; }
+  pre.csv-help {
+    background: #1f2330; color: #e5e8ef; padding: 10px;
+    border-radius: 6px; font-size: 12px; overflow-x: auto;
+  }
+
+  /* ============== GENERATED SHEET ============== */
+  .runner { display: none; }
+  body.running .form-wrap { display: none; }
+  body.running .runner { display: block; }
+
+  .toolbar {
+    position: sticky; top: 0; z-index: 50;
+    background: #1f2330; color: #fff;
+    padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 10px;
+    align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,.25);
+  }
+  .toolbar .meta { font-size: 12px; background: #2c3142;
+    padding: 6px 12px; border-radius: 4px; opacity: .95; }
+  .toolbar button {
+    font: inherit; font-size: 13px; padding: 7px 12px;
+    border-radius: 5px; border: none; cursor: pointer; font-weight: 600;
+  }
+  .toolbar .print-btn { background: #2a7f4f; color: #fff; }
+  .toolbar .print-btn:hover { background: #1f6940; }
+  .toolbar .back-btn  { background: #3158b0; color: #fff; }
+  .toolbar .back-btn:hover { background: #244790; }
+  .toolbar .hint { font-size: 11.5px; opacity: .85; max-width: 360px; }
+
+  .sheet {
+    width: 210mm; height: 297mm;
+    margin: 16px auto; background: #fff; position: relative;
+    box-shadow: 0 0 10px rgba(0,0,0,.18);
+    overflow: hidden;
+  }
+  /* Each sticker is absolutely positioned at its exact (top,left)
+     using the Oddy-spec top margin + row*vertical-pitch (and similar
+     for left). This matches the printed die-cut, including asymmetric
+     bottom/right margins that don't equal top/left. */
+  .sticker {
+    position: absolute;
+    border: 0.3mm dashed #c9cdd6;
+    padding: 2.5mm 3mm;
+    display: flex; flex-direction: column; justify-content: center;
+    overflow: hidden;
+    page-break-inside: avoid; break-inside: avoid;
+  }
+  .sticker .title {
+    font-weight: var(--title-weight, 700);
+    font-size: var(--title-size, 10pt);
+    line-height: 1.15;
+    letter-spacing: .2px;
+    margin-bottom: 1mm;
+    text-transform: var(--title-transform, uppercase);
+    text-decoration: var(--title-decoration, none);
+  }
+  .sticker .free {
+    font-weight: var(--body-weight, 400);
+    font-size: var(--body-size, 8.5pt);
+    line-height: inherit;
+    white-space: pre-wrap; word-break: break-word;
+  }
+  .sticker .row-line {
+    display: flex;
+    font-weight: var(--body-weight, 400);
+    font-size: calc(var(--body-size, 8.5pt) * 0.94);
+    line-height: 1.25; margin: .2mm 0;
+  }
+  .sticker .row-line .k { font-weight: 600; min-width: 14mm; }
+  .sticker .row-line .v { flex: 1; border-bottom: .15mm solid #000; min-height: 2.6mm; }
+  .sticker .footer {
+    margin-top: 1mm;
+    font-size: calc(var(--body-size, 8.5pt) * 0.78);
+    opacity: .75; text-align: right;
+  }
+
+  .sticker.compact { padding: 1mm 2mm; align-items: center; text-align: center; }
+  .sticker.compact .title { font-size: calc(var(--title-size, 10pt) * 0.8); margin: 0; }
+  .sticker.compact .row-line, .sticker.compact .footer { display: none; }
+  .sticker.compact .subline { font-size: calc(var(--body-size, 8.5pt) * 0.85); opacity: .8; }
+  .sticker.compact .free { font-size: calc(var(--body-size, 8.5pt) * 0.85); }
+
+  .sticker.clip { overflow: hidden; }
+
+  .sheet.fullpage .grid,
+  .sheet.halfpage .grid { display: none; }
+  .free-block {
+    position: absolute; left: 8mm; right: 8mm;
+    padding: 6mm 8mm; border: 0.3mm dashed #c9cdd6;
+    font-size: 12pt; line-height: 1.45; white-space: pre-wrap;
+    word-break: break-word; overflow: hidden;
+  }
+  .free-block .title-big {
+    font-size: var(--title-size, 18pt);
+    font-weight: var(--title-weight, 700);
+    margin-bottom: 4mm;
+    text-transform: var(--title-transform, uppercase);
+    text-decoration: var(--title-decoration, none);
+    letter-spacing: .5px;
+  }
+  .free-block .free { font-size: var(--body-size, 12pt); font-weight: var(--body-weight, 400); }
+  .sheet.fullpage .free-block { top: 8mm; bottom: 8mm; }
+  .sheet.halfpage .free-block.top    { top: 8mm; height: 132mm; }
+  .sheet.halfpage .free-block.bottom { top: 157mm; height: 132mm; }
+  .sheet.halfpage::before {
+    content: ""; position: absolute; left: 8mm; right: 8mm; top: 148.5mm;
+    border-top: 0.2mm dashed #999;
+  }
+
+  [contenteditable="true"]:hover { background: #fff8d8; }
+  [contenteditable="true"]:focus { outline: 1px dashed #2a7f4f; background: #fff; }
+
+  @media print {
+    body { background: #fff; }
+    .toolbar, .form-wrap { display: none !important; }
+    .sheet { margin: 0; box-shadow: none; page-break-after: always; }
+    .sheet:last-child { page-break-after: auto; }
+    body.no-guides .sticker { border-color: transparent; }
+    body.no-guides .free-block { border-color: transparent; }
+    body.no-guides .sheet.halfpage::before { border-top-color: transparent; }
+  }
+
+  .toast {
+    position: fixed; bottom: 20px; right: 20px;
+    background: #1f2330; color: #fff; padding: 10px 14px;
+    border-radius: 6px; font-size: 13px; z-index: 200;
+    box-shadow: 0 4px 12px rgba(0,0,0,.25);
+    opacity: 0; transform: translateY(10px); transition: all .25s;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- ====================== STEP 1: SETUP FORM (split: form + preview) ====================== -->
+<div class="form-wrap">
+  <div class="form-card">
+    <h1>Oddy Sticker Printer
+      <small>— free, browser-based, no install, works with all 21 Oddy A4 SKUs</small>
+    </h1>
+    <div style="background:linear-gradient(90deg,#dc143c 0%,#003893 100%);color:#fff;padding:8px 12px;border-radius:6px;margin:8px 0 0;font-size:12.5px;line-height:1.5;">
+      🇳🇵 <b>Made in Nepal for All</b> · Built for the MRP (Maximum Retail Price) labelling
+      requirement on every product sold in Nepal. Free to use — no signup, no cost.
+    </div>
+
+    <!-- ===== Section A: Template ===== -->
+    <h2>1 · Template / Mode</h2>
+    <div class="row">
+      <div class="field">
+        <label for="mode">Print mode</label>
+        <select id="mode">
+          <option value="grid" selected>Sticker grid (Oddy SKU)</option>
+          <option value="halfpage">Half-page free-write (2/sheet)</option>
+          <option value="fullpage">Full-page free-write (1/sheet)</option>
+        </select>
+        <span class="hint">Grid = print on Oddy adhesive sheet. Half/Full = plain A4.</span>
+      </div>
+      <div class="field" id="sku-field">
+        <label for="sku">Oddy SKU</label>
+        <select id="sku"></select>
+        <span class="hint" id="sku-meta">—</span>
+      </div>
+    </div>
+
+    <!-- ===== Section B: Quantity ===== -->
+    <h2>2 · Quantity</h2>
+    <div class="row cols-3">
+      <div class="field">
+        <label for="sheets">Sheets to print</label>
+        <input type="number" id="sheets" min="1" max="100" value="1">
+      </div>
+      <div class="field">
+        <label for="perSheet">Labels per sheet</label>
+        <input type="number" id="perSheet" value="33" readonly>
+        <span class="hint">From SKU.</span>
+      </div>
+      <div class="field">
+        <label>Total label slots</label>
+        <input type="text" id="total" readonly value="33">
+        <span class="hint">sheets × labels.</span>
+      </div>
+    </div>
+
+    <!-- ===== Section C: Content library ===== -->
+    <h2>3 · Content library
+      <span style="text-transform:none;letter-spacing:0;font-weight:400;font-size:11px;color:#8a92a3;">
+        — saved between sessions in this browser
+      </span>
+    </h2>
+    <div class="panel">
+      <div class="row">
+        <div class="field">
+          <label for="contentType">Layout of content</label>
+          <select id="contentType">
+            <option value="freewrite" selected>Free-write (title + body block)</option>
+            <option value="structured">Structured (Name / Address / Phone / Ref / Date)</option>
+            <option value="blank">Blank (write by hand)</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="presetName">Name this content (for saving)</label>
+          <input type="text" id="presetName" placeholder="e.g. My Shop Return Address">
+        </div>
+      </div>
+
+      <div class="row" id="freewrite-fields">
+        <div class="field">
+          <label for="title">Title / heading</label>
+          <input type="text" id="title" maxlength="60" placeholder="e.g. RETURN ADDRESS, INVOICE, PRICE">
+          <div class="preset-row">
+            <button type="button" data-preset="RETURN ADDRESS">Return address</button>
+            <button type="button" data-preset="SHIP TO">Ship to</button>
+            <button type="button" data-preset="INVOICE">Invoice</button>
+            <button type="button" data-preset="PRICE">Price tag</button>
+            <button type="button" data-preset="ASSET TAG">Asset tag</button>
+            <button type="button" data-preset="BARCODE">Barcode</button>
+            <button type="button" data-preset="">Clear</button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="body">Body text</label>
+          <textarea id="body" placeholder="Type the content. Long text shrinks to fit."></textarea>
+        </div>
+      </div>
+
+      <div class="row cols-3" id="structured-fields" style="display:none;">
+        <div class="field"><label>Name</label><input type="text" id="f-name"></div>
+        <div class="field"><label>Address</label><input type="text" id="f-addr"></div>
+        <div class="field"><label>Phone</label><input type="text" id="f-phone"></div>
+        <div class="field"><label>Ref / Item</label><input type="text" id="f-ref"></div>
+        <div class="field"><label>Date</label><input type="text" id="f-date"></div>
+        <div class="field"><label>Footer note</label><input type="text" id="f-foot"></div>
+      </div>
+
+      <div class="actions" style="margin-top:14px;">
+        <button type="button" class="btn btn-primary btn-sm" onclick="savePreset()">💾 Save to library</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="clearContentFields()">Clear fields</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="exportLibrary()">Export library (JSON)</button>
+        <label class="btn btn-secondary btn-sm" style="display:inline-block;cursor:pointer;">
+          Import library
+          <input type="file" id="importFile" accept=".json" style="display:none;">
+        </label>
+      </div>
+
+      <div style="margin-top:14px;">
+        <strong style="font-size:13px;">Saved presets</strong>
+        <div class="lib-grid" id="library" style="margin-top:8px;"></div>
+      </div>
+    </div>
+
+    <!-- ===== Section D: Print queue ===== -->
+    <h2>4 · Print queue
+      <span style="text-transform:none;letter-spacing:0;font-weight:400;font-size:11px;color:#8a92a3;">
+        — assign different content to ranges of labels
+      </span>
+    </h2>
+    <div class="panel">
+      <div class="row">
+        <div class="field">
+          <label for="queuePick">Add preset to queue</label>
+          <select id="queuePick"></select>
+        </div>
+        <div class="field">
+          <label for="queueCount">How many labels to fill with it</label>
+          <input type="number" id="queueCount" min="1" value="1">
+          <span class="hint">Use "Rest" to fill all remaining slots.</span>
+        </div>
+      </div>
+      <div class="actions" style="margin-top:6px;">
+        <button type="button" class="btn btn-alt btn-sm" onclick="queueAdd(false)">+ Add</button>
+        <button type="button" class="btn btn-alt btn-sm" onclick="queueAdd(true)">+ Add rest</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="queueClear()">Clear queue</button>
+      </div>
+
+      <div style="margin-top:14px;">
+        <div class="queue-list" id="queueList"></div>
+        <div class="queue-total" id="queueTotal">No items.</div>
+      </div>
+    </div>
+
+    <!-- ===== Section E: Bulk CSV ===== -->
+    <h2>5 · Bulk CSV (optional, overrides queue)</h2>
+    <div class="panel">
+      <div class="row">
+        <div class="field">
+          <label for="csv">CSV file</label>
+          <input type="file" id="csv" accept=".csv,text/csv">
+        </div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <details>
+            <summary>CSV column format</summary>
+            <pre class="csv-help">free-write:   title, body
+structured:   title, name, address, phone, ref, date, footer
+
+One row per label. Header row optional (auto-detected).</pre>
+          </details>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== Section F: Typography + print options ===== -->
+    <h2>6 · Typography
+      <span style="text-transform:none;letter-spacing:0;font-weight:400;font-size:11px;color:#8a92a3;">
+        — also saved per preset
+      </span>
+    </h2>
+    <div class="panel">
+      <div class="row">
+        <div class="field">
+          <label for="font">Font family</label>
+          <select id="font">
+            <optgroup label="Sans-serif">
+              <option value="Inter, Helvetica, Arial, sans-serif" selected>Inter / Helvetica</option>
+              <option value="Arial, sans-serif">Arial</option>
+              <option value="'Segoe UI', Tahoma, sans-serif">Segoe UI</option>
+              <option value="Verdana, Geneva, sans-serif">Verdana</option>
+              <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+              <option value="Tahoma, sans-serif">Tahoma</option>
+              <option value="'Roboto', Helvetica, sans-serif">Roboto</option>
+            </optgroup>
+            <optgroup label="Serif">
+              <option value="'Times New Roman', Times, serif">Times New Roman</option>
+              <option value="Georgia, serif">Georgia</option>
+              <option value="'Palatino Linotype', 'Book Antiqua', Palatino, serif">Palatino</option>
+              <option value="'Garamond', serif">Garamond</option>
+              <option value="'Cambria', Georgia, serif">Cambria</option>
+            </optgroup>
+            <optgroup label="Monospace">
+              <option value="'Courier New', Courier, monospace">Courier New</option>
+              <option value="'Lucida Console', Monaco, monospace">Lucida Console</option>
+              <option value="'Consolas', monospace">Consolas</option>
+            </optgroup>
+            <optgroup label="Display / special">
+              <option value="'Impact', 'Arial Narrow', sans-serif">Impact</option>
+              <option value="'Comic Sans MS', cursive">Comic Sans</option>
+              <option value="'Brush Script MT', cursive">Brush Script</option>
+            </optgroup>
+          </select>
+          <span class="hint">Browser falls back if the font isn't installed.</span>
+        </div>
+
+        <div class="field">
+          <label for="align">Text alignment</label>
+          <select id="align">
+            <option value="left" selected>Left</option>
+            <option value="center">Center</option>
+            <option value="right">Right</option>
+            <option value="justify">Justify</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row cols-3" style="margin-top:10px;">
+        <div class="field">
+          <label for="titleSize">Title size <span id="titleSize-val" style="font-weight:400;color:#5d6679;">10 pt</span></label>
+          <input type="range" id="titleSize" min="6" max="36" step="0.5" value="10">
+        </div>
+        <div class="field">
+          <label for="bodySize">Body size <span id="bodySize-val" style="font-weight:400;color:#5d6679;">8.5 pt</span></label>
+          <input type="range" id="bodySize" min="5" max="22" step="0.5" value="8.5">
+        </div>
+        <div class="field">
+          <label for="lineH">Line height <span id="lineH-val" style="font-weight:400;color:#5d6679;">1.30</span></label>
+          <input type="range" id="lineH" min="1.0" max="2.0" step="0.05" value="1.30">
+        </div>
+      </div>
+
+      <div class="row cols-3" style="margin-top:10px;">
+        <div class="field">
+          <label for="titleWeight">Title weight</label>
+          <select id="titleWeight">
+            <option value="400">Regular</option>
+            <option value="500">Medium</option>
+            <option value="600">Semibold</option>
+            <option value="700" selected>Bold</option>
+            <option value="800">Extra-bold</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="bodyWeight">Body weight</label>
+          <select id="bodyWeight">
+            <option value="300">Light</option>
+            <option value="400" selected>Regular</option>
+            <option value="500">Medium</option>
+            <option value="600">Semibold</option>
+            <option value="700">Bold</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Style</label>
+          <div style="display:flex;gap:8px;align-items:center;padding-top:4px;">
+            <label style="font-weight:400;font-size:12px;display:flex;gap:4px;align-items:center;cursor:pointer;">
+              <input type="checkbox" id="italic"> <i>Italic</i>
+            </label>
+            <label style="font-weight:400;font-size:12px;display:flex;gap:4px;align-items:center;cursor:pointer;">
+              <input type="checkbox" id="upper" checked> <b>UPPER title</b>
+            </label>
+            <label style="font-weight:400;font-size:12px;display:flex;gap:4px;align-items:center;cursor:pointer;">
+              <input type="checkbox" id="underline"> <u>Title underline</u>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="row cols-3" style="margin-top:10px;">
+        <div class="field">
+          <label for="guides">Cut guides</label>
+          <select id="guides">
+            <option value="hide" selected>Hide on print</option>
+            <option value="show">Show on print</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="numbered">Auto-number</label>
+          <select id="numbered">
+            <option value="off" selected>Off</option>
+            <option value="suffix">Append #1, #2, #3 …</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="fitMode">Long-text fit</label>
+          <select id="fitMode">
+            <option value="auto" selected>Auto-shrink to fit</option>
+            <option value="fixed">Fixed size (may overflow)</option>
+            <option value="clip">Clip overflow</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="actions" style="margin-top:10px;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="resetTypography()">Reset typography to defaults</button>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button type="button" class="btn btn-primary" onclick="start()">Generate full sheet →</button>
+      <button type="button" class="btn btn-secondary" onclick="if(confirm('Reset form (keeps library)?')){resetForm();}">Reset form</button>
+    </div>
+
+    <footer style="margin-top:24px;padding-top:14px;border-top:1px solid #e5e8ef;font-size:11.5px;color:#5d6679;line-height:1.6;text-align:center;">
+      Made with ❤️ by <b>Saroj Rijal</b> · <b>Sahara Labs</b> · 🇳🇵 Nepal<br>
+      Free for everyone — pre-filled, pre-templated layouts for all Oddy A4 sticker sheets.<br>
+      <a href="https://github.com/Forgesaroj/oddy-printer" style="color:#3158b0;text-decoration:none;" target="_blank">Source on GitHub →</a>
+    </footer>
+  </div>
+
+  <!-- ============== LIVE PREVIEW (sticky, right) ============== -->
+  <aside class="preview-pane">
+    <h3>Live preview <span class="badge" id="prev-badge">sheet 1</span></h3>
+    <div class="ctrl-row">
+      <span>Zoom</span>
+      <input type="range" id="prev-zoom" min="0.25" max="1.00" step="0.01" value="0.65">
+      <span id="prev-zoom-val">65%</span>
+    </div>
+    <div class="preview-stage" id="prev-stage">
+      <div class="preview-sheet" id="prev-sheet"></div>
+    </div>
+    <div class="preview-pager">
+      <button id="prev-prev" onclick="previewPage(-1)">‹ Prev</button>
+      <span id="prev-pageinfo">Sheet 1 / 1</span>
+      <button id="prev-next" onclick="previewPage(1)">Next ›</button>
+    </div>
+    <div class="preview-meta" id="prev-meta">—</div>
+  </aside>
+</div>
+
+<!-- ====================== STEP 2: GENERATED RUNNER ====================== -->
+<div class="runner">
+  <div class="toolbar">
+    <button class="back-btn" onclick="back()">← Back to form</button>
+    <span class="meta" id="meta-bar">—</span>
+    <button class="print-btn" onclick="window.print()">🖨 Print (Ctrl+P)</button>
+    <span class="hint">EpsonM100 or Canon LBP2900 → A4 → Margins: None → Scale: 100%.</span>
+  </div>
+  <div id="sheets-host"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* =====================================================================
+   ODDY A4 SKU CATALOG — verified dimensions
+   Source: oddyindia.com official A4 paper labels page + hlabels.com
+   Note: ST-33 is 66×25.4 mm (3 cols × 11 rows), NOT tall spine
+   ===================================================================== */
+/* All values transcribed from the official Oddy "Dimensions
+   Identification Table" printed on the inside cover of the pack.
+   topM/leftM = margin from sheet edge to first label edge.
+   vp/hp      = vertical/horizontal PITCH (top-of-label to top-of-next).
+   w/h        = each label's width/height.
+   gap between labels = pitch − dimension.                        */
+const SKUS = [
+  { code:"ST-1A4100",  n:1,  cols:1, rows:1,  w:199.6, h:289.000, topM:3.378,  leftM:5.182, vp:289.052, hp:199.644, word:"L-7167",  desc:"1 full sheet" },
+  { code:"ST-2A4100",  n:2,  cols:1, rows:2,  w:199.6, h:143.600, topM:4.877,  leftM:5.182, vp:143.510, hp:199.644, word:"L-7168",  desc:"2 large" },
+  { code:"ST-4A4100",  n:4,  cols:2, rows:2,  w:99.1,  h:139.000, topM:9.500,  leftM:4.597, vp:138.938, hp:101.600, word:"L-7169",  desc:"Shipping" },
+  { code:"ST-6A4100",  n:6,  cols:2, rows:3,  w:99.1,  h:93.400,  topM:8.788,  leftM:4.699, vp:93.472,  hp:101.600, word:"L-7166",  desc:"Big" },
+  { code:"ST-6SA4100", n:6,  cols:2, rows:3,  w:90.0,  h:80.000,  topM:28.5,   leftM:13.0,  vp:80.0,    hp:92.0,    word:"—",       desc:"Special 6-up (approx)" },
+  { code:"ST-8A4100",  n:8,  cols:2, rows:4,  w:99.1,  h:67.700,  topM:12.979, leftM:4.496, vp:67.818,  hp:101.600, word:"L-7165",  desc:"Address/Folder" },
+  { code:"ST-10A4100", n:10, cols:2, rows:5,  w:99.1,  h:57.000,  topM:5.994,  leftM:4.597, vp:56.896,  hp:101.778, word:"L-7173",  desc:"Address" },
+  { code:"ST-12A4100", n:12, cols:2, rows:6,  w:100.0, h:44.150,  topM:7.620,  leftM:3.810, vp:46.482,  hp:103.124, word:"—",       desc:"Address" },
+  { code:"ST-14A4100", n:14, cols:2, rows:7,  w:99.06, h:38.400,  topM:15.088, leftM:4.597, vp:38.075,  hp:101.600, word:"L-7163",  desc:"Address" },
+  { code:"ST-16A4100", n:16, cols:2, rows:8,  w:99.1,  h:33.900,  topM:12.979, leftM:4.597, vp:33.884,  hp:101.473, word:"L-7162",  desc:"Address" },
+  { code:"ST-18A4100", n:18, cols:3, rows:6,  w:63.5,  h:46.600,  topM:8.788,  leftM:7.188, vp:46.584,  hp:65.964,  word:"L-7161",  desc:"3-col medium" },
+  { code:"ST-20A4100", n:20, cols:2, rows:10, w:98.0,  h:28.000,  topM:8.500,  leftM:6.000, vp:28.000,  hp:100.000, word:"—",       desc:"Long thin" },
+  { code:"ST-21A4100", n:21, cols:3, rows:7,  w:63.5,  h:38.100,  topM:15.088, leftM:7.188, vp:38.075,  hp:65.964,  word:"L-7160",  desc:"Avery L7160" },
+  { code:"ST-24A4100", n:24, cols:3, rows:8,  w:64.0,  h:34.000,  topM:12.979, leftM:4.597, vp:33.858,  hp:66.472,  word:"L-7159",  desc:"Most common" },
+  { code:"ST-30A4100", n:30, cols:5, rows:6,  w:39.0,  h:47.500,  topM:2.499,  leftM:4.498, vp:49.276,  hp:40.498,  word:"—",       desc:"5×6 small" },
+  { code:"ST-33A4100", n:33, cols:3, rows:11, w:66.0,  h:25.400,  topM:8.890,  leftM:6.096, vp:25.400,  hp:66.040,  word:"—",       desc:"3×11 — your sheet" },
+  { code:"ST-40A4100", n:40, cols:4, rows:10, w:52.5,  h:29.700,  topM:0.000,  leftM:0.000, vp:52.476,  hp:29.693,  word:"Z-Weck 3651", desc:"4-col" },
+  { code:"ST-48A4100", n:48, cols:4, rows:12, w:45.7,  h:21.100,  topM:21.336, leftM:9.652, vp:21.082,  hp:48.260,  word:"—",       desc:"Return address" },
+  { code:"ST-56A4100", n:56, cols:4, rows:14, w:50.0,  h:20.100,  topM:9.144,  leftM:5.080, vp:20.066,  hp:50.038,  word:"—",       desc:"Barcode" },
+  { code:"ST-65A4100", n:65, cols:5, rows:13, w:38.1,  h:21.200,  topM:10.897, leftM:4.191, vp:21.184,  hp:40.564,  word:"L-7651",  desc:"Avery L7651" },
+  { code:"ST-84A4100", n:84, cols:4, rows:21, w:46.0,  h:11.000,  topM:15.875, leftM:4.978, vp:12.675,  hp:50.673,  word:"L-7656",  desc:"Tiny price" },
+];
+
+const $ = id => document.getElementById(id);
+const LS_KEY = 'oddy.printer.v1';
+
+/* ============ Library state (localStorage) ============ */
+let LIB = { presets: [] };  // [{id, name, type, fields}]
+let QUEUE = [];             // [{presetId, count, rest:bool}]
+let CSV_ROWS = null;
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (raw) LIB = JSON.parse(raw);
+    if (!LIB.presets) LIB.presets = [];
+  } catch (e) { LIB = { presets: [] }; }
+}
+function saveState() {
+  localStorage.setItem(LS_KEY, JSON.stringify(LIB));
+}
+
+/* ============ SKU + form behavior ============ */
+const sku = $('sku');
+SKUS.forEach(s => {
+  const o = document.createElement('option');
+  o.value = s.code;
+  const wordRef = (s.word && s.word !== '—') ? ` · ${s.word}` : '';
+  o.textContent = `${s.code} — ${s.n}/sheet · ${s.cols}×${s.rows} · ${s.w}×${s.h} mm${wordRef} · ${s.desc}`;
+  sku.appendChild(o);
+});
+sku.value = "ST-33A4100";   // user has ST-33
+
+function currentSlotCount() {
+  const mode = $('mode').value;
+  const sheets = Math.max(1, parseInt($('sheets').value, 10) || 1);
+  if (mode === 'grid') {
+    const s = SKUS.find(x => x.code === sku.value);
+    return sheets * s.n;
+  } else if (mode === 'halfpage') {
+    return sheets * 2;
+  }
+  return sheets;   // fullpage
+}
+
+function updateSlotInfo() {
+  const mode = $('mode').value;
+  if (mode === 'grid') {
+    const s = SKUS.find(x => x.code === sku.value);
+    $('perSheet').value = s.n;
+    $('sku-meta').textContent =
+      `${s.cols}×${s.rows} · ${s.w}×${s.h} mm · ` +
+      `top ${s.topM}mm · left ${s.leftM}mm · ` +
+      `pitch V${s.vp} H${s.hp} mm` +
+      (s.word && s.word !== '—' ? ` · Word ref ${s.word}` : '');
+    $('sku-field').style.display = '';
+  } else if (mode === 'halfpage') {
+    $('perSheet').value = 2; $('sku-field').style.display = 'none';
+  } else {
+    $('perSheet').value = 1; $('sku-field').style.display = 'none';
+  }
+  $('total').value = currentSlotCount();
+  renderQueue();
+}
+
+function updateContentType() {
+  const t = $('contentType').value;
+  $('freewrite-fields').style.display  = (t === 'blank') ? 'none' : 'grid';
+  $('structured-fields').style.display = (t === 'structured') ? 'grid' : 'none';
+  $('body').disabled = (t !== 'freewrite');
+}
+
+$('mode').addEventListener('change', updateSlotInfo);
+sku.addEventListener('change', updateSlotInfo);
+$('sheets').addEventListener('input', updateSlotInfo);
+$('contentType').addEventListener('change', updateContentType);
+document.querySelectorAll('[data-preset]').forEach(b =>
+  b.addEventListener('click', () => $('title').value = b.dataset.preset));
+
+/* ============ Content library ============ */
+function gatherTypographyFromForm() {
+  return {
+    font:        $('font').value,
+    align:       $('align').value,
+    titleSize:   parseFloat($('titleSize').value),
+    bodySize:    parseFloat($('bodySize').value),
+    lineH:       parseFloat($('lineH').value),
+    titleWeight: $('titleWeight').value,
+    bodyWeight:  $('bodyWeight').value,
+    italic:      $('italic').checked,
+    upper:       $('upper').checked,
+    underline:   $('underline').checked,
+  };
+}
+
+function gatherContentFromForm() {
+  const type = $('contentType').value;
+  return {
+    type,
+    title:  $('title').value.trim(),
+    body:   $('body').value,
+    f_name: $('f-name').value, f_addr: $('f-addr').value,
+    f_phone:$('f-phone').value, f_ref:  $('f-ref').value,
+    f_date: $('f-date').value, f_foot: $('f-foot').value,
+    typo:   gatherTypographyFromForm(),
+  };
+}
+
+function applyTypographyToForm(typo) {
+  if (!typo) return;
+  if (typo.font)        $('font').value = typo.font;
+  if (typo.align)       $('align').value = typo.align;
+  if (typo.titleSize != null)   $('titleSize').value = typo.titleSize;
+  if (typo.bodySize  != null)   $('bodySize').value  = typo.bodySize;
+  if (typo.lineH     != null)   $('lineH').value     = typo.lineH;
+  if (typo.titleWeight) $('titleWeight').value = typo.titleWeight;
+  if (typo.bodyWeight)  $('bodyWeight').value  = typo.bodyWeight;
+  $('italic').checked    = !!typo.italic;
+  $('upper').checked     = typo.upper !== false;
+  $('underline').checked = !!typo.underline;
+  updateTypoLabels();
+}
+
+function updateTypoLabels() {
+  $('titleSize-val').textContent = $('titleSize').value + ' pt';
+  $('bodySize-val').textContent  = $('bodySize').value  + ' pt';
+  $('lineH-val').textContent     = parseFloat($('lineH').value).toFixed(2);
+}
+
+function resetTypography() {
+  applyTypographyToForm({
+    font: 'Inter, Helvetica, Arial, sans-serif',
+    align: 'left',
+    titleSize: 10, bodySize: 8.5, lineH: 1.30,
+    titleWeight: '700', bodyWeight: '400',
+    italic: false, upper: true, underline: false,
+  });
+  schedulePreview();
+}
+
+function savePreset() {
+  const name = $('presetName').value.trim();
+  if (!name) { toast('Give the preset a name first.'); $('presetName').focus(); return; }
+  const content = gatherContentFromForm();
+  // Update if same name exists
+  const existing = LIB.presets.find(p => p.name.toLowerCase() === name.toLowerCase());
+  if (existing) {
+    Object.assign(existing, { name, ...content });
+    toast(`Updated "${name}"`);
+  } else {
+    LIB.presets.push({ id: 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2,7), name, ...content });
+    toast(`Saved "${name}" to library`);
+  }
+  saveState();
+  renderLibrary();
+  renderQueuePicker();
+  $('presetName').value = '';
+}
+
+function loadPresetIntoForm(id) {
+  const p = LIB.presets.find(x => x.id === id);
+  if (!p) return;
+  $('presetName').value = p.name;
+  $('contentType').value = p.type;
+  $('title').value  = p.title  || '';
+  $('body').value   = p.body   || '';
+  $('f-name').value = p.f_name || ''; $('f-addr').value = p.f_addr || '';
+  $('f-phone').value= p.f_phone|| ''; $('f-ref').value  = p.f_ref  || '';
+  $('f-date').value = p.f_date || ''; $('f-foot').value = p.f_foot || '';
+  if (p.typo) applyTypographyToForm(p.typo);
+  updateContentType();
+  schedulePreview();
+  toast(`Loaded "${p.name}" — edit then save again to update`);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function deletePreset(id) {
+  const p = LIB.presets.find(x => x.id === id);
+  if (!p) return;
+  if (!confirm(`Delete preset "${p.name}"?`)) return;
+  LIB.presets = LIB.presets.filter(x => x.id !== id);
+  QUEUE = QUEUE.filter(q => q.presetId !== id);
+  saveState();
+  renderLibrary();
+  renderQueuePicker();
+  renderQueue();
+  toast(`Deleted "${p.name}"`);
+}
+
+function clearContentFields() {
+  $('title').value = ''; $('body').value = '';
+  ['f-name','f-addr','f-phone','f-ref','f-date','f-foot'].forEach(id => $(id).value = '');
+  $('presetName').value = '';
+}
+
+function summarize(p) {
+  if (p.type === 'structured') {
+    return [p.f_name, p.f_addr, p.f_phone].filter(Boolean).join(' · ');
+  }
+  if (p.type === 'blank') return '(blank cells)';
+  return p.body || '(no body)';
+}
+
+function renderLibrary() {
+  const host = $('library');
+  if (!LIB.presets.length) {
+    host.innerHTML = `<div class="lib-item empty">No saved presets yet. Fill the fields above, name it, click Save.</div>`;
+    return;
+  }
+  host.innerHTML = LIB.presets.map(p => `
+    <div class="lib-item">
+      <div class="lib-title">${escapeHtml(p.name)}</div>
+      <div class="lib-meta">${p.type} · title: ${escapeHtml(p.title || '—')}</div>
+      <div class="lib-body">${escapeHtml(summarize(p))}</div>
+      <div class="lib-actions">
+        <button onclick="loadPresetIntoForm('${p.id}')">✎ Edit</button>
+        <button onclick="queueQuickAdd('${p.id}')">+ Add to queue</button>
+        <button class="danger" onclick="deletePreset('${p.id}')">🗑 Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+function renderQueuePicker() {
+  const sel = $('queuePick');
+  sel.innerHTML = LIB.presets.length
+    ? LIB.presets.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('')
+    : `<option value="">(no presets — save one first)</option>`;
+}
+
+function queueAdd(rest) {
+  const id = $('queuePick').value;
+  if (!id) { toast('Save a preset first.'); return; }
+  const count = Math.max(1, parseInt($('queueCount').value, 10) || 1);
+  QUEUE.push({ presetId: id, count, rest: !!rest });
+  renderQueue();
+}
+function queueQuickAdd(id) {
+  QUEUE.push({ presetId: id, count: 1, rest: false });
+  renderQueue();
+}
+function queueClear() {
+  if (!QUEUE.length) return;
+  if (!confirm('Clear queue?')) return;
+  QUEUE = [];
+  renderQueue();
+}
+function queueRemove(i) {
+  QUEUE.splice(i, 1);
+  renderQueue();
+}
+function queueSetCount(i, val) {
+  QUEUE[i].count = Math.max(1, parseInt(val, 10) || 1);
+  renderQueue();
+}
+
+function renderQueue() {
+  const host = $('queueList');
+  const totalEl = $('queueTotal');
+  if (!QUEUE.length) {
+    host.innerHTML = '';
+    totalEl.innerHTML = `<span class="queue-empty">Queue is empty. Without a queue, the form's current content fills every label.</span>`;
+    return;
+  }
+  const slots = currentSlotCount();
+  let used = 0;
+  host.innerHTML = QUEUE.map((q, i) => {
+    const p = LIB.presets.find(x => x.id === q.presetId);
+    const name = p ? p.name : '(deleted preset)';
+    const cnt = q.rest ? Math.max(0, slots - used) : q.count;
+    used += cnt;
+    return `
+      <div class="queue-row">
+        <span class="idx">${i+1}</span>
+        <span class="name"><b>${escapeHtml(name)}</b>${q.rest ? '  <i style="color:#3158b0;">(rest)</i>' : ''}</span>
+        <span class="count">
+          ${q.rest
+            ? `<i>${cnt} labels</i>`
+            : `<input type="number" min="1" value="${q.count}" onchange="queueSetCount(${i}, this.value)">`}
+        </span>
+        <button onclick="queueRemove(${i})">Remove</button>
+      </div>`;
+  }).join('');
+  const diff = used - slots;
+  totalEl.innerHTML = `Queue total: <b>${used}</b> / available <b>${slots}</b>${
+    diff > 0 ? ` <span style="color:#b1331f;">(overflow ${diff} — extra entries will be ignored)</span>`
+    : diff < 0 ? ` <span style="color:#3158b0;">(${-diff} slots will be left blank or filled with current form content)</span>`
+    : ''
+  }`;
+}
+
+/* ============ Import / export library ============ */
+function exportLibrary() {
+  const data = JSON.stringify(LIB, null, 2);
+  const blob = new Blob([data], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'oddy-library.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('Exported oddy-library.json');
+}
+$('importFile').addEventListener('change', ev => {
+  const f = ev.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.presets) throw new Error('Invalid file');
+      if (!confirm(`Import ${data.presets.length} presets? This merges with your library.`)) return;
+      data.presets.forEach(p => {
+        if (!LIB.presets.find(x => x.id === p.id)) LIB.presets.push(p);
+      });
+      saveState();
+      renderLibrary(); renderQueuePicker(); renderQueue();
+      toast(`Imported ${data.presets.length} presets`);
+    } catch (err) { toast('Import failed: ' + err.message); }
+  };
+  r.readAsText(f);
+});
+
+/* ============ CSV ============ */
+$('csv').addEventListener('change', ev => {
+  const f = ev.target.files[0];
+  if (!f) { CSV_ROWS = null; return; }
+  const r = new FileReader();
+  r.onload = e => { CSV_ROWS = parseCSV(e.target.result); toast(`CSV loaded: ${CSV_ROWS.length} rows`); };
+  r.readAsText(f);
+});
+
+function parseCSV(text) {
+  const out = []; let row = []; let cur = ''; let q = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (q) {
+      if (ch === '"' && text[i+1] === '"') { cur += '"'; i++; }
+      else if (ch === '"') q = false;
+      else cur += ch;
+    } else {
+      if (ch === '"') q = true;
+      else if (ch === ',') { row.push(cur); cur = ''; }
+      else if (ch === '\n') { row.push(cur); out.push(row); row = []; cur = ''; }
+      else if (ch === '\r') { /* skip */ }
+      else cur += ch;
+    }
+  }
+  if (cur.length || row.length) { row.push(cur); out.push(row); }
+  return out.filter(r => r.length && r.some(c => c !== ''));
+}
+
+/* ============ Build the slot list (which content goes where) ============ */
+function expandQueue(slots) {
+  // Returns array of preset objects (or null) per slot index
+  const out = new Array(slots).fill(null);
+  if (CSV_ROWS) return out;  // CSV mode handles per-slot in build
+  let i = 0;
+  for (const q of QUEUE) {
+    const cnt = q.rest ? Math.max(0, slots - i) : q.count;
+    const preset = LIB.presets.find(p => p.id === q.presetId);
+    for (let k = 0; k < cnt && i < slots; k++, i++) out[i] = preset || null;
+  }
+  // Fallback: anything not assigned uses current form content
+  const fallback = gatherContentFromForm();
+  for (let k = 0; k < slots; k++) {
+    if (!out[k]) out[k] = fallback;
+  }
+  return out;
+}
+
+function csvRowFor(slotIdx) {
+  if (!CSV_ROWS) return null;
+  const first = (CSV_ROWS[0] && CSV_ROWS[0][0] || '').toLowerCase();
+  const offset = ['title','name','heading'].includes(first) ? 1 : 0;
+  return CSV_ROWS[offset + slotIdx] || null;
+}
+
+/* ============ Generate ============ */
+function buildOpts() {
+  const typo = gatherTypographyFromForm();
+  return {
+    align: typo.align,
+    font:  typo.font,
+    num:   $('numbered').value,
+    fitMode: $('fitMode').value,
+    typo,
+  };
+}
+
+function start() {
+  const mode = $('mode').value;
+  const sheets = Math.max(1, parseInt($('sheets').value, 10) || 1);
+  const opts = buildOpts();
+  document.body.style.fontFamily = opts.font;
+  document.body.classList.toggle('no-guides', $('guides').value === 'hide');
+
+  const slots = currentSlotCount();
+  const assignments = expandQueue(slots);
+
+  const host = $('sheets-host');
+  host.innerHTML = '';
+  let slotIdx = 0;
+
+  for (let p = 0; p < sheets; p++) {
+    const sheet = document.createElement('div');
+    sheet.className = 'sheet';
+    host.appendChild(sheet);
+
+    if (mode === 'fullpage') {
+      sheet.classList.add('fullpage');
+      sheet.appendChild(buildFreeBlock(assignments[slotIdx], slotIdx+1, '', opts));
+      slotIdx++;
+    } else if (mode === 'halfpage') {
+      sheet.classList.add('halfpage');
+      sheet.appendChild(buildFreeBlock(assignments[slotIdx], slotIdx+1, 'top', opts));
+      slotIdx++;
+      sheet.appendChild(buildFreeBlock(assignments[slotIdx], slotIdx+1, 'bottom', opts));
+      slotIdx++;
+    } else {
+      const s = SKUS.find(x => x.code === sku.value);
+      for (let r = 0; r < s.rows; r++) {
+        for (let c = 0; c < s.cols; c++) {
+          const content = CSV_ROWS ? csvToContent(csvRowFor(slotIdx)) : assignments[slotIdx];
+          const cell = buildLabel(content, slotIdx+1, s, opts);
+          cell.style.top    = (s.topM  + r * s.vp) + 'mm';
+          cell.style.left   = (s.leftM + c * s.hp) + 'mm';
+          cell.style.width  = s.w + 'mm';
+          cell.style.height = s.h + 'mm';
+          sheet.appendChild(cell);
+          slotIdx++;
+        }
+      }
+    }
+  }
+
+  // Meta
+  const s = SKUS.find(x => x.code === sku.value);
+  let metaText = (mode === 'grid')
+    ? `${sheets} sheet(s) · ${s.code} · ${s.cols}×${s.rows} · ${s.w}×${s.h} mm · top ${s.topM}/left ${s.leftM} · ${sheets*s.n} labels`
+    : (mode === 'halfpage')
+      ? `${sheets} sheet(s) · half-page · ${sheets*2} blocks`
+      : `${sheets} sheet(s) · full-page`;
+  if (QUEUE.length) metaText += `  ·  queue: ${QUEUE.length} entr${QUEUE.length===1?'y':'ies'}`;
+  if (CSV_ROWS)     metaText += `  ·  CSV active`;
+  $('meta-bar').textContent = metaText;
+
+  document.body.classList.add('running');
+  window.scrollTo({ top: 0, behavior: 'instant' });
+}
+
+function back() { document.body.classList.remove('running'); }
+
+function resetForm() {
+  $('mode').value = 'grid';
+  sku.value = "ST-33A4100";
+  $('sheets').value = 1;
+  $('contentType').value = 'freewrite';
+  clearContentFields();
+  $('guides').value = 'hide';
+  $('font').value = 'Inter, Helvetica, Arial, sans-serif';
+  $('align').value = 'left';
+  $('numbered').value = 'off';
+  QUEUE = []; CSV_ROWS = null; $('csv').value = '';
+  updateSlotInfo(); updateContentType(); renderQueue();
+}
+
+/* ============ Cell builders ============ */
+function csvToContent(row) {
+  if (!row) return null;
+  return {
+    type: 'freewrite',
+    title: row[0] || '',
+    body:  row[1] || '',
+    f_name:row[1] || '', f_addr:row[2] || '',
+    f_phone:row[3] || '',f_ref: row[4] || '',
+    f_date:row[5] || '', f_foot:row[6] || '',
+  };
+}
+
+function applyNum(text, idx, opts) {
+  return opts.num === 'suffix' ? ((text || '') + ' #' + idx).trim() : text;
+}
+
+function typoFor(content, opts) {
+  // Each content piece can carry its own typography (saved per preset).
+  // Fall back to the form-wide typography from opts.
+  return (content && content.typo) || opts.typo || {};
+}
+
+function applyTypoStyles(cell, typo, opts) {
+  const t = { ...(opts.typo || {}), ...(typo || {}) };
+  cell.style.fontFamily = t.font || opts.font;
+  cell.style.textAlign  = t.align || opts.align;
+  cell.style.fontStyle  = t.italic ? 'italic' : 'normal';
+  cell.style.lineHeight = (t.lineH ?? 1.3);
+  // Apply per-element via CSS vars for title/body
+  cell.style.setProperty('--title-size',   (t.titleSize   ?? 10)   + 'pt');
+  cell.style.setProperty('--body-size',    (t.bodySize    ?? 8.5)  + 'pt');
+  cell.style.setProperty('--title-weight', (t.titleWeight ?? 700));
+  cell.style.setProperty('--body-weight',  (t.bodyWeight  ?? 400));
+  cell.style.setProperty('--title-transform', (t.upper === false) ? 'none' : 'uppercase');
+  cell.style.setProperty('--title-decoration', t.underline ? 'underline' : 'none');
+}
+
+function buildLabel(content, idx, sku, opts) {
+  const cell = document.createElement('div');
+  cell.className = 'sticker' + (sku.h <= 24 ? ' compact' : '');
+  if (opts.fitMode === 'clip') cell.classList.add('clip');
+  applyTypoStyles(cell, typoFor(content, opts), opts);
+
+  if (!content || content.type === 'blank') {
+    cell.innerHTML = `<div class="title" contenteditable="true">${escapeHtml(content && content.title || '')}</div>
+      <div class="row-line"><span class="k">&nbsp;</span><span class="v" contenteditable="true"></span></div>
+      <div class="row-line"><span class="k">&nbsp;</span><span class="v" contenteditable="true"></span></div>
+      <div class="row-line"><span class="k">&nbsp;</span><span class="v" contenteditable="true"></span></div>`;
+    return autoFit(cell, opts);
+  }
+
+  if (content.type === 'freewrite') {
+    const title = content.title || '';
+    let body = content.body || '';
+    body = applyNum(body, idx, opts);
+    if (sku.h <= 24) {
+      cell.innerHTML =
+        `<div class="title" contenteditable="true">${escapeHtml(title)}</div>` +
+        (body ? `<div class="subline" contenteditable="true">${escapeHtml(body)}</div>` : '');
+    } else {
+      cell.innerHTML =
+        (title ? `<div class="title" contenteditable="true">${escapeHtml(title)}</div>` : '') +
+        `<div class="free" contenteditable="true">${escapeHtml(body)}</div>`;
+    }
+    return autoFit(cell, opts);
+  }
+
+  // structured
+  const t = content.title || '';
+  const r_ref = applyNum(content.f_ref, idx, opts);
+  if (sku.h <= 24) {
+    cell.innerHTML = `<div class="title">${escapeHtml(t)}</div>
+      <div class="subline">${escapeHtml([content.f_name, content.f_addr, r_ref].filter(Boolean).join(' · '))}</div>`;
+  } else {
+    cell.innerHTML = `
+      <div class="title">${escapeHtml(t)}</div>
+      ${content.f_name ? `<div class="row-line"><span class="k">Name:</span><span class="v">${escapeHtml(content.f_name)}</span></div>` : ''}
+      ${content.f_addr ? `<div class="row-line"><span class="k">Address:</span><span class="v">${escapeHtml(content.f_addr)}</span></div>` : ''}
+      ${content.f_phone? `<div class="row-line"><span class="k">Phone:</span><span class="v">${escapeHtml(content.f_phone)}</span></div>` : ''}
+      ${r_ref ? `<div class="row-line"><span class="k">Ref:</span><span class="v">${escapeHtml(r_ref)}</span></div>` : ''}
+      ${content.f_date ? `<div class="row-line"><span class="k">Date:</span><span class="v">${escapeHtml(content.f_date)}</span></div>` : ''}
+      ${content.f_foot ? `<div class="footer">${escapeHtml(content.f_foot)}</div>` : ''}
+    `;
+  }
+  return autoFit(cell, opts);
+}
+
+/* Optional auto-shrink: if the cell's content overflows its box,
+   downscale .free / .subline font-size until it fits or hits 4pt floor.
+   Only runs for "auto" fit mode and only after the cell is in the DOM. */
+function autoFit(cell, opts) {
+  if (opts.fitMode !== 'auto') return cell;
+  // Defer measurement until after layout
+  requestAnimationFrame(() => {
+    const targets = cell.querySelectorAll('.free, .subline, .row-line');
+    if (!cell.isConnected || !targets.length) return;
+    let tries = 24;
+    while (tries-- > 0 && cell.scrollHeight > cell.clientHeight + 1) {
+      let any = false;
+      targets.forEach(el => {
+        const cs = window.getComputedStyle(el);
+        const cur = parseFloat(cs.fontSize);
+        if (cur > 5) { el.style.fontSize = (cur - 0.5) + 'px'; any = true; }
+      });
+      if (!any) break;
+    }
+  });
+  return cell;
+}
+
+function buildFreeBlock(content, idx, half, opts) {
+  const blk = document.createElement('div');
+  blk.className = 'free-block' + (half ? ' ' + half : '');
+  applyTypoStyles(blk, typoFor(content, opts), opts);
+  // For free-blocks (much bigger area) scale title up
+  const t = typoFor(content, opts);
+  blk.style.setProperty('--title-size', ((t.titleSize ?? 10) * 1.8) + 'pt');
+  blk.style.setProperty('--body-size',  ((t.bodySize  ?? 8.5) * 1.4) + 'pt');
+  const title = content && content.title || '';
+  let body = content && content.body || '';
+  body = applyNum(body, idx, opts);
+  blk.innerHTML =
+    (title ? `<div class="title-big" contenteditable="true">${escapeHtml(title)}</div>` : '') +
+    `<div class="free" contenteditable="true">${escapeHtml(body)}</div>`;
+  return blk;
+}
+
+/* ============ Helpers ============ */
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+function toast(msg) {
+  const t = $('toast'); t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+/* ===========================================================
+   LIVE PREVIEW — renders the currently-configured sheet at scale
+   into the right-hand pane. Updates on every form input.
+   =========================================================== */
+let PREV_PAGE = 0;
+
+function renderPreview() {
+  const stage = $('prev-stage');
+  const sheet = $('prev-sheet');
+  const meta  = $('prev-meta');
+  const badge = $('prev-badge');
+  const pageInfo = $('prev-pageinfo');
+  if (!sheet) return;
+
+  // Refresh transform/stage size from --prev-scale
+  const scale = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--prev-scale')) || 0.4;
+  sheet.style.transform = `scale(${scale})`;
+  stage.style.height = `calc(297mm * ${scale})`;
+  stage.style.width  = `calc(210mm * ${scale})`;
+
+  const mode    = $('mode').value;
+  const sheets  = Math.max(1, parseInt($('sheets').value, 10) || 1);
+  const slots   = currentSlotCount();
+  const opts    = buildOpts();
+
+  // Clamp page index
+  if (PREV_PAGE < 0) PREV_PAGE = 0;
+  if (PREV_PAGE > sheets - 1) PREV_PAGE = sheets - 1;
+  pageInfo.textContent = `Sheet ${PREV_PAGE + 1} / ${sheets}`;
+  badge.textContent = `sheet ${PREV_PAGE + 1}`;
+  $('prev-prev').disabled = PREV_PAGE === 0;
+  $('prev-next').disabled = PREV_PAGE >= sheets - 1;
+
+  // Slot assignments for the visible page
+  const assignments = expandQueue(slots);
+  sheet.style.fontFamily = opts.font;
+  sheet.className = 'preview-sheet';
+  sheet.innerHTML = '';
+
+  if (mode === 'fullpage') {
+    sheet.classList.add('fullpage');
+    const slotIdx = PREV_PAGE;
+    sheet.appendChild(buildFreeBlock(assignments[slotIdx], slotIdx+1, '', opts));
+    meta.textContent = `Full-page free-write · ${sheets} sheet(s)`;
+  } else if (mode === 'halfpage') {
+    sheet.classList.add('halfpage');
+    const base = PREV_PAGE * 2;
+    sheet.appendChild(buildFreeBlock(assignments[base],   base+1, 'top',    opts));
+    sheet.appendChild(buildFreeBlock(assignments[base+1], base+2, 'bottom', opts));
+    meta.textContent = `Half-page · ${sheets} sheet(s) · ${sheets*2} blocks total`;
+  } else {
+    const s = SKUS.find(x => x.code === sku.value);
+    const base = PREV_PAGE * s.n;
+    for (let r = 0; r < s.rows; r++) {
+      for (let c = 0; c < s.cols; c++) {
+        const idxOnPage = r * s.cols + c;
+        const slotIdx = base + idxOnPage;
+        const content = CSV_ROWS ? csvToContent(csvRowFor(slotIdx)) : assignments[slotIdx];
+        const cell = buildLabel(content, slotIdx+1, s, opts);
+        cell.style.top    = (s.topM  + r * s.vp) + 'mm';
+        cell.style.left   = (s.leftM + c * s.hp) + 'mm';
+        cell.style.width  = s.w + 'mm';
+        cell.style.height = s.h + 'mm';
+        // disable editing in preview cells
+        cell.querySelectorAll('[contenteditable="true"]').forEach(e => e.removeAttribute('contenteditable'));
+        sheet.appendChild(cell);
+      }
+    }
+    meta.textContent =
+      `${s.code} · ${s.cols}×${s.rows} · ${s.w}×${s.h} mm · ` +
+      `top ${s.topM}mm · left ${s.leftM}mm · ` +
+      `${sheets} sheet(s) · ${sheets * s.n} labels total`;
+  }
+}
+
+function previewPage(delta) {
+  PREV_PAGE += delta;
+  renderPreview();
+}
+
+function setPreviewScale(v) {
+  document.documentElement.style.setProperty('--prev-scale', String(v));
+  $('prev-zoom-val').textContent = Math.round(v * 100) + '%';
+  renderPreview();
+}
+
+// Debounced re-render so typing in fields is smooth
+let PREV_DEB = null;
+function schedulePreview() {
+  clearTimeout(PREV_DEB);
+  PREV_DEB = setTimeout(renderPreview, 80);
+}
+
+/* ============ Init ============ */
+loadState();
+updateSlotInfo();
+updateContentType();
+renderLibrary();
+renderQueuePicker();
+renderQueue();
+
+// Wire live-preview updates to every relevant form input
+[
+  'mode','sku','sheets','contentType',
+  'title','body',
+  'f-name','f-addr','f-phone','f-ref','f-date','f-foot',
+  'guides','font','align','numbered',
+  'titleSize','bodySize','lineH',
+  'titleWeight','bodyWeight',
+  'italic','upper','underline','fitMode'
+].forEach(id => {
+  const el = $(id);
+  if (!el) return;
+  el.addEventListener('input',  schedulePreview);
+  el.addEventListener('change', schedulePreview);
+});
+
+// Live-update the slider value labels
+['titleSize','bodySize','lineH'].forEach(id => {
+  const el = $(id);
+  if (el) el.addEventListener('input', updateTypoLabels);
+});
+updateTypoLabels();
+
+// Zoom slider
+$('prev-zoom').addEventListener('input', e => setPreviewScale(parseFloat(e.target.value)));
+
+// Also re-render preview after queue / library changes (wrap existing fns)
+const _renderQueue = renderQueue;
+renderQueue = function() { _renderQueue.apply(this, arguments); schedulePreview(); };
+const _renderLibrary = renderLibrary;
+renderLibrary = function() { _renderLibrary.apply(this, arguments); schedulePreview(); };
+
+// Initial paint
+setPreviewScale(0.65);
+renderPreview();
+</script>
+</body>
+</html>
