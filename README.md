@@ -1,37 +1,61 @@
 # Oddy Sticker Printer
 
-🇳🇵 **Free, browser-based label printer for all 21 Oddy A4 sticker SKUs.**
-Built in Nepal for shops, businesses, and anyone who needs to print
-MRP / address / barcode / price labels on Oddy adhesive A4 sheets.
+> 🇳🇵 **If you've ever wasted 3 sticker sheets fighting Microsoft Word
+> over a 2mm margin, this tool is for you.**
 
-**Live tool:** https://forgesaroj.github.io/oddy-printer/
+**👉 Open it now: https://forgesaroj.github.io/oddy-printer/**
 
-No install, no signup, no cost. Works offline once loaded.
-Use any browser (Chrome, Firefox, Edge, Brave).
-Print on any A4 printer — tested on Epson M100 (inkjet) and Canon LBP2900 (laser).
+Free. Browser-based. All 21 Oddy A4 SKUs pre-configured.
+No install. No signup. No cost. Works offline once loaded.
+Made in Nepal for the MRP labelling system that every shop now needs.
+
+![Tool screenshot](https://img.shields.io/badge/status-live-success) ![Made in Nepal](https://img.shields.io/badge/made%20in-Nepal%20%F0%9F%87%B3%F0%9F%87%B5-red) ![License](https://img.shields.io/badge/license-MIT-blue) ![No signup](https://img.shields.io/badge/signup-not%20required-brightgreen)
 
 ---
 
-## Why this exists
+## The problem this solves
 
-Nepal's MRP (Maximum Retail Price) regulation requires every product
-sold in retail to carry a printed MRP label. Oddy A4 sticker sheets
-are the most common adhesive label stock available in Nepal, but
-filling them out one-by-one in Word/LibreOffice is tedious and prone
-to alignment problems.
+Every shopkeeper, every small business in Nepal has been through this:
 
-This tool:
+- You buy a packet of Oddy stickers — **ST-24, ST-33, ST-48, ST-65**, whichever
+- You open MS Word and search for "Avery L7159" or "33 labels per sheet"
+- You guess at margins. You print a test page. Labels are 2mm off.
+- You waste 3 sheets. You give up. You write prices by hand with a marker.
 
-- Has every Oddy A4 SKU pre-configured with the **exact margins, pitches and
+Now with Nepal's MRP (Maximum Retail Price) rules requiring printed
+labels on every product sold in retail, this happens **every single day**
+in shops across the country.
+
+This tool fixes it. **Pick your Oddy code → type your content → print.**
+The exact margins and pitches from the official Oddy spec sheet are
+already baked in for all 21 SKUs.
+
+## What you can do with it
+
+- 📋 Print **MRP labels** with shop name, MRP price, mfg date, item code
+- 🏷️ Print **price tags** for retail shelves
+- 📦 Print **address / return labels** for parcels & couriers
+- 🗂️ Print **file labels** for offices and lawyers
+- 📊 Print **barcode labels** (Code-128, EAN-13 — paste your generated image)
+- 🛍️ Print **product stickers** with different content on each label,
+  all on the same sheet (e.g. 33 different prices on one ST-33 sheet)
+
+## Features
+
+- ✅ Every Oddy A4 SKU pre-configured with the **exact margins, pitches, and
   label sizes** from the official Oddy "Dimensions Identification Table"
-- Supports **free-write content** (one text block) or **structured labels**
-  (name / address / phone / ref / date)
-- Lets you **save named content presets** in your browser and reuse them later
-- Has a **print queue** so different labels on the same sheet can hold
-  different content (e.g. 11 return-address + 22 price tags = one sheet)
-- Shows a **live preview** as you type, with zoom and page navigation
-- Includes typography controls: font family, size sliders, weight, italic,
-  underline, uppercase, line height, auto-shrink
+- ✅ **Free-write** content (one text block per label) or **structured**
+  labels (name / address / phone / ref / date / footer)
+- ✅ **Save named content presets** in your browser — type once, reuse forever
+- ✅ **Print queue** — put different content on different labels of the same
+  sheet (e.g. 11 return-address + 22 price tags on one ST-33 sheet)
+- ✅ **Live preview** updates as you type, with zoom and page navigation
+- ✅ **Typography controls** — font, size sliders, weight, italic, underline,
+  uppercase, line height, auto-shrink-to-fit
+- ✅ **CSV bulk fill** — paste a spreadsheet column and fill 84 different
+  labels in one click
+- ✅ **Works offline** once the page has loaded once
+- ✅ **No tracking, no analytics, no servers** — everything runs in your browser
 
 ---
 
@@ -108,12 +132,32 @@ as JSON to move it between machines.
 
 ---
 
+## Share this with a shopkeeper
+
+If you know someone in Nepal who runs a shop, a clinic, a courier
+service, or any small business that prints labels — **send them this
+link**. They'll save hours every month and stop wasting sticker
+sheets.
+
+> साथीहरूलाई share गर्नुहोस् 🙏
+> कुनै नेपाली व्यापारी, shopkeeper, clinic, courier सेवा,
+> ​ साना-ठूला सबै businesses को लागि — free मा हुन्छ।
+
+🔗 **https://forgesaroj.github.io/oddy-printer/**
+
+---
+
 ## Made by
 
 **Saroj Rijal** · [Sahara Labs](https://github.com/Forgesaroj) · 🇳🇵 Nepal
-Made with ❤️ for everyone.
+Made with ❤️ for everyone, forever free.
 
 Released under the [MIT License](LICENSE) — free to use, fork, and modify.
 
 Issues, feature requests, and contributions welcome on
 [GitHub](https://github.com/Forgesaroj/oddy-printer/issues).
+
+If this tool saved you time, you can support the project by:
+- ⭐ Starring the repo on GitHub
+- 📢 Sharing it with one other shopkeeper
+- 💬 Opening an issue if you find a SKU that needs tweaking
