@@ -146,22 +146,60 @@
   }
   .rt-wrap:focus-within { outline: 2px solid #2a7f4f; border-color: #2a7f4f; }
   .rt-toolbar {
-    display: flex; flex-wrap: wrap; gap: 2px;
-    padding: 5px 6px; background: #f7f8fb;
+    display: flex; flex-wrap: wrap; gap: 6px;
+    padding: 7px 8px; background: linear-gradient(180deg,#f9fafc 0%,#eef0f4 100%);
     border-bottom: 1px solid #e5e8ef;
     align-items: center;
   }
-  .rt-toolbar button, .rt-toolbar select {
-    font: inherit; font-size: 12px;
-    background: #fff; border: 1px solid #cdd2dd;
-    border-radius: 4px; padding: 4px 7px;
-    cursor: pointer; min-width: 28px;
+  .rt-group {
+    display: flex; align-items: center; gap: 2px;
+    padding: 2px 6px;
+    background: #fff;
+    border: 1px solid #d8dce5;
+    border-radius: 5px;
+    box-shadow: 0 1px 2px rgba(0,0,0,.04);
+  }
+  .rt-toolbar button, .rt-toolbar select, .rt-toolbar input[type="number"] {
+    font: inherit; font-size: 12.5px;
+    background: transparent; border: 1px solid transparent;
+    border-radius: 3px; padding: 4px 6px;
+    cursor: pointer; min-width: 26px; min-height: 26px;
     color: #1a1d24;
   }
-  .rt-toolbar button:hover { background: #eef2ff; border-color: #6b7adb; }
-  .rt-toolbar button.is-active { background: #2a7f4f; color: #fff; border-color: #2a7f4f; }
-  .rt-toolbar .sep { width: 1px; height: 20px; background: #cdd2dd; margin: 0 4px; }
-  .rt-toolbar select { padding: 3px 4px; min-width: 0; }
+  .rt-toolbar input[type="number"] {
+    background: #fff; border-color: #d8dce5;
+    cursor: text; padding: 3px 4px;
+  }
+  .rt-toolbar button:hover, .rt-toolbar select:hover { background: #eef2ff; }
+  .rt-toolbar button.is-active {
+    background: #d4edda; color: #155724;
+    border-color: #c3e6cb;
+  }
+  .rt-toolbar select { padding: 3px 4px; min-width: 0; background: #fff; border-color: #d8dce5; }
+  .rt-toolbar .rt-font  { min-width: 110px; max-width: 140px; font-size: 12px; }
+  .rt-toolbar .rt-size-input { width: 48px; text-align: center; }
+  .rt-toolbar .rt-size-pick  { width: 56px; }
+  .rt-toolbar .rt-line       { width: 64px; }
+
+  /* Color swatches MS-Word style: letter on top, color strip below */
+  .rt-color-wrap {
+    display: inline-flex; flex-direction: column; align-items: center;
+    cursor: pointer; padding: 2px 4px; border-radius: 3px;
+    line-height: 1;
+  }
+  .rt-color-wrap:hover { background: #eef2ff; }
+  .rt-color-wrap .rt-color-icon {
+    font-size: 12px; font-weight: 700; padding: 0 4px;
+  }
+  .rt-color-wrap input[type="color"] {
+    width: 22px; height: 5px; padding: 0;
+    border: none; background: transparent; cursor: pointer;
+    margin-top: 1px;
+  }
+  /* Slightly larger toolbar buttons on wider screens */
+  @media (min-width: 800px) {
+    .rt-toolbar button, .rt-toolbar select { font-size: 13px; }
+  }
   .rt-editor {
     min-height: 90px; padding: 10px 12px;
     font: inherit; font-size: 14px; line-height: 1.45;
@@ -506,34 +544,108 @@
           <label for="body">Body text <span style="font-weight:400;color:#5d6679;">— select text, then click toolbar to format</span></label>
           <div class="rt-wrap">
             <div class="rt-toolbar" role="toolbar" aria-label="Body formatting">
-              <button type="button" data-cmd="bold"       title="Bold (Ctrl+B)"><b>B</b></button>
-              <button type="button" data-cmd="italic"     title="Italic (Ctrl+I)"><i>I</i></button>
-              <button type="button" data-cmd="underline"  title="Underline (Ctrl+U)"><u>U</u></button>
-              <button type="button" data-cmd="strikeThrough" title="Strikethrough"><s>S</s></button>
-              <span class="sep"></span>
-              <button type="button" data-cmd="fontSizeUp"   title="Bigger text">A+</button>
-              <button type="button" data-cmd="fontSizeDown" title="Smaller text">a-</button>
-              <select data-cmd="fontSize" title="Set size">
-                <option value="">Size</option>
-                <option value="1">XS</option>
-                <option value="2">S</option>
-                <option value="3" selected>M</option>
-                <option value="4">L</option>
-                <option value="5">XL</option>
-                <option value="6">XXL</option>
-                <option value="7">Huge</option>
-              </select>
-              <span class="sep"></span>
-              <button type="button" data-cmd="justifyLeft"   title="Align left">⯇</button>
-              <button type="button" data-cmd="justifyCenter" title="Align center">≡</button>
-              <button type="button" data-cmd="justifyRight"  title="Align right">⯈</button>
-              <span class="sep"></span>
-              <button type="button" data-cmd="insertUnorderedList" title="Bullet list">• ☰</button>
-              <button type="button" data-cmd="insertOrderedList"   title="Numbered list">1. ☰</button>
-              <span class="sep"></span>
-              <input type="color" data-cmd="foreColor" title="Text color" value="#000000" style="width:28px;height:24px;padding:0;border:1px solid #cdd2dd;border-radius:4px;cursor:pointer;">
-              <span class="sep"></span>
-              <button type="button" data-cmd="removeFormat"  title="Clear formatting">⨯ Clear</button>
+              <!-- Group: Font family & size (MS Word "Font" group) -->
+              <div class="rt-group" title="Font">
+                <select data-cmd="fontName" class="rt-font" title="Font family">
+                  <option value="">Font</option>
+                  <optgroup label="Sans-serif">
+                    <option value="Inter, Helvetica, Arial, sans-serif">Inter</option>
+                    <option value="Arial, sans-serif">Arial</option>
+                    <option value="Calibri, sans-serif">Calibri</option>
+                    <option value="Verdana, sans-serif">Verdana</option>
+                    <option value="Tahoma, sans-serif">Tahoma</option>
+                    <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+                    <option value="'Segoe UI', sans-serif">Segoe UI</option>
+                    <option value="Helvetica, sans-serif">Helvetica</option>
+                  </optgroup>
+                  <optgroup label="Serif">
+                    <option value="'Times New Roman', serif">Times New Roman</option>
+                    <option value="Georgia, serif">Georgia</option>
+                    <option value="'Cambria', serif">Cambria</option>
+                    <option value="'Garamond', serif">Garamond</option>
+                    <option value="'Book Antiqua', serif">Book Antiqua</option>
+                  </optgroup>
+                  <optgroup label="Mono">
+                    <option value="'Courier New', monospace">Courier New</option>
+                    <option value="'Consolas', monospace">Consolas</option>
+                    <option value="'Lucida Console', monospace">Lucida Console</option>
+                  </optgroup>
+                  <optgroup label="Display">
+                    <option value="Impact, sans-serif">Impact</option>
+                    <option value="'Comic Sans MS', cursive">Comic Sans MS</option>
+                    <option value="'Brush Script MT', cursive">Brush Script MT</option>
+                  </optgroup>
+                </select>
+                <input  type="number" class="rt-size-input" data-cmd="setFontPt"
+                       title="Font size (pt)" min="4" max="200" step="0.5" placeholder="pt">
+                <select class="rt-size-pick" data-cmd="setFontPt" title="Pick size">
+                  <option value="">Size</option>
+                  <option>8</option><option>9</option><option>10</option>
+                  <option>11</option><option>12</option><option>14</option>
+                  <option>16</option><option>18</option><option>20</option>
+                  <option>22</option><option>24</option><option>26</option>
+                  <option>28</option><option>32</option><option>36</option>
+                  <option>40</option><option>48</option><option>56</option>
+                  <option>64</option><option>72</option>
+                </select>
+                <button type="button" data-cmd="incFontPt"   title="Grow font (Ctrl+])">A▲</button>
+                <button type="button" data-cmd="decFontPt"   title="Shrink font (Ctrl+[)">A▼</button>
+              </div>
+
+              <!-- Group: Bold / italic / underline / case -->
+              <div class="rt-group" title="Style">
+                <button type="button" data-cmd="bold"          title="Bold (Ctrl+B)"><b>B</b></button>
+                <button type="button" data-cmd="italic"        title="Italic (Ctrl+I)"><i>I</i></button>
+                <button type="button" data-cmd="underline"     title="Underline (Ctrl+U)"><u>U</u></button>
+                <button type="button" data-cmd="strikeThrough" title="Strikethrough"><s>abc</s></button>
+                <button type="button" data-cmd="subscript"     title="Subscript">x<sub>2</sub></button>
+                <button type="button" data-cmd="superscript"   title="Superscript">x<sup>2</sup></button>
+                <button type="button" data-cmd="case-upper"    title="UPPERCASE">A̲A</button>
+                <button type="button" data-cmd="case-lower"    title="lowercase">a̲a</button>
+                <button type="button" data-cmd="case-title"    title="Capitalize Each Word">Aa</button>
+              </div>
+
+              <!-- Group: Color + highlight -->
+              <div class="rt-group" title="Color">
+                <label class="rt-color-wrap" title="Font color">
+                  <span class="rt-color-icon">A</span>
+                  <input type="color" data-cmd="foreColor" value="#000000">
+                </label>
+                <label class="rt-color-wrap" title="Highlight color">
+                  <span class="rt-color-icon" style="background:#ffec3a;">▮</span>
+                  <input type="color" data-cmd="hiliteColor" value="#ffec3a">
+                </label>
+                <button type="button" data-cmd="clear-highlight" title="Remove highlight">✕▮</button>
+              </div>
+
+              <!-- Group: Paragraph alignment + lists -->
+              <div class="rt-group" title="Paragraph">
+                <button type="button" data-cmd="justifyLeft"    title="Align left (Ctrl+L)">⯇</button>
+                <button type="button" data-cmd="justifyCenter"  title="Center (Ctrl+E)">≡</button>
+                <button type="button" data-cmd="justifyRight"   title="Align right (Ctrl+R)">⯈</button>
+                <button type="button" data-cmd="justifyFull"    title="Justify (Ctrl+J)">▤</button>
+                <button type="button" data-cmd="insertUnorderedList" title="Bullets">• ☰</button>
+                <button type="button" data-cmd="insertOrderedList"   title="Numbering">1. ☰</button>
+                <button type="button" data-cmd="outdent"        title="Decrease indent (Shift+Tab)">⇤</button>
+                <button type="button" data-cmd="indent"         title="Increase indent (Tab)">⇥</button>
+                <select data-cmd="lineHeight" title="Line spacing" class="rt-line">
+                  <option value="">↕</option>
+                  <option value="1">1.0</option>
+                  <option value="1.15">1.15</option>
+                  <option value="1.25">1.25</option>
+                  <option value="1.5">1.5</option>
+                  <option value="2">2.0</option>
+                  <option value="2.5">2.5</option>
+                  <option value="3">3.0</option>
+                </select>
+              </div>
+
+              <!-- Group: History + clear -->
+              <div class="rt-group" title="Actions">
+                <button type="button" data-cmd="undo" title="Undo (Ctrl+Z)">↶</button>
+                <button type="button" data-cmd="redo" title="Redo (Ctrl+Y)">↷</button>
+                <button type="button" data-cmd="removeFormat" title="Clear formatting">⨯ Clear</button>
+              </div>
             </div>
             <div class="rt-editor"
                  id="body"
@@ -1644,9 +1756,14 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
   const toolbar = editor && editor.closest('.rt-wrap').querySelector('.rt-toolbar');
   if (!editor || !toolbar) return;
 
+  // Prefer style-based formatting (font-size in pt, color CSS) over deprecated tags.
+  try { document.execCommand('styleWithCSS', false, true); } catch(e) {}
+
   // Keep selection inside the editor: refocus on toolbar button mousedown
   toolbar.addEventListener('mousedown', e => {
-    if (e.target.closest('button, select, input[type=color]')) e.preventDefault();
+    if (e.target.closest('button, select, input[type=color], input[type=number], .rt-color-wrap')) {
+      e.preventDefault();   // prevent losing selection
+    }
   });
 
   function exec(cmd, value) {
@@ -1656,44 +1773,153 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     refreshButtonStates();
   }
 
-  // Click handlers
-  toolbar.querySelectorAll('button[data-cmd]').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const cmd = btn.dataset.cmd;
-      if (cmd === 'fontSizeUp')   return bumpFontSize(+1);
-      if (cmd === 'fontSizeDown') return bumpFontSize(-1);
-      exec(cmd);
-    });
-  });
-  toolbar.querySelectorAll('select[data-cmd], input[data-cmd]').forEach(ctrl => {
-    ctrl.addEventListener('input', () => {
-      if (ctrl.value) exec(ctrl.dataset.cmd, ctrl.value);
-    });
-  });
-
-  function bumpFontSize(delta) {
-    // execCommand fontSize uses HTML size 1..7; bump current up/down
+  /* --- Wrap selection in span style="..." (used for font-size/line-height) --- */
+  function wrapSelectionStyle(styleProp, styleVal) {
     editor.focus();
     const sel = window.getSelection();
     if (!sel.rangeCount) return;
     const range = sel.getRangeAt(0);
-    if (range.collapsed) return;            // need a selection
-    // Read first child's current size if available
-    const probe = document.createElement('font');
-    probe.size = 3;
-    // Re-apply at adjusted size
-    const cur = parseInt(getCurrentFontSize() || 3, 10);
-    const next = Math.max(1, Math.min(7, cur + delta));
-    exec('fontSize', String(next));
-  }
-  function getCurrentFontSize() {
-    return document.queryCommandValue('fontSize') || 3;
+    if (range.collapsed) return;
+    const span = document.createElement('span');
+    span.style[styleProp] = styleVal;
+    try {
+      const frag = range.extractContents();
+      span.appendChild(frag);
+      range.insertNode(span);
+      // Reset selection across the new span
+      const nr = document.createRange();
+      nr.selectNodeContents(span);
+      sel.removeAllRanges(); sel.addRange(nr);
+    } catch (e) { /* selection across block boundaries — fall back to execCommand */ }
+    schedulePreview();
   }
 
-  // Highlight active formatting buttons
+  /* --- Read current font-size at cursor (returns pt as number, default 10) --- */
+  function getCurrentPt() {
+    const sel = window.getSelection();
+    let node = sel.rangeCount ? sel.getRangeAt(0).startContainer : editor;
+    if (node && node.nodeType === 3) node = node.parentNode;
+    if (!node) return 10;
+    const px = parseFloat(getComputedStyle(node).fontSize);
+    return Math.round(px * 0.75 * 10) / 10;          // px → pt, 1 decimal
+  }
+  function setFontPt(pt) {
+    const num = parseFloat(pt);
+    if (!isFinite(num) || num <= 0) return;
+    wrapSelectionStyle('fontSize', num + 'pt');
+    // sync size input
+    const inp = toolbar.querySelector('.rt-size-input');
+    if (inp) inp.value = num;
+  }
+  function bumpPt(delta) {
+    const cur = getCurrentPt();
+    const next = Math.max(4, Math.min(200, cur + delta));
+    setFontPt(next);
+  }
+
+  /* --- Case transforms --- */
+  function transformCase(mode) {
+    editor.focus();
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    if (range.collapsed) return;
+    const text = range.toString();
+    let out = text;
+    if (mode === 'upper') out = text.toUpperCase();
+    else if (mode === 'lower') out = text.toLowerCase();
+    else if (mode === 'title') out = text.replace(/\w\S*/g, w =>
+      w[0].toUpperCase() + w.slice(1).toLowerCase());
+    document.execCommand('insertText', false, out);
+    schedulePreview();
+  }
+
+  /* --- Highlight color via execCommand fallback to hiliteColor/backColor --- */
+  function setHighlight(color) {
+    editor.focus();
+    try {
+      if (!document.execCommand('hiliteColor', false, color)) {
+        document.execCommand('backColor', false, color);
+      }
+    } catch (e) {}
+    schedulePreview();
+  }
+  function clearHighlight() {
+    editor.focus();
+    // Clearing highlight: easiest is to apply transparent then strip via sanitize on save
+    setHighlight('transparent');
+  }
+
+  /* --- Line height: wrap selected block(s) --- */
+  function setLineHeight(val) {
+    editor.focus();
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    let node = range.startContainer;
+    if (node.nodeType === 3) node = node.parentNode;
+    // Walk up to a block-level ancestor inside the editor
+    while (node && node !== editor && !/^(P|DIV|LI|UL|OL|BLOCKQUOTE)$/.test(node.tagName || '')) {
+      node = node.parentNode;
+    }
+    if (node && node !== editor) {
+      node.style.lineHeight = val;
+      schedulePreview();
+    } else {
+      // wrap selection in span
+      wrapSelectionStyle('lineHeight', val);
+    }
+  }
+
+  /* --- Click + change handlers --- */
+  toolbar.querySelectorAll('button[data-cmd]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const cmd = btn.dataset.cmd;
+      switch (cmd) {
+        case 'incFontPt':   return bumpPt(+1);
+        case 'decFontPt':   return bumpPt(-1);
+        case 'case-upper':  return transformCase('upper');
+        case 'case-lower':  return transformCase('lower');
+        case 'case-title':  return transformCase('title');
+        case 'clear-highlight': return clearHighlight();
+        default: exec(cmd);
+      }
+    });
+  });
+
+  toolbar.querySelectorAll('select[data-cmd]').forEach(sel => {
+    sel.addEventListener('change', () => {
+      const cmd = sel.dataset.cmd;
+      const val = sel.value;
+      if (!val) return;
+      if (cmd === 'setFontPt')   setFontPt(val);
+      else if (cmd === 'lineHeight') setLineHeight(val);
+      else exec(cmd, val);
+      sel.value = '';   // reset so same value can be re-picked
+    });
+  });
+
+  toolbar.querySelectorAll('input[type="number"][data-cmd]').forEach(inp => {
+    inp.addEventListener('change', () => {
+      if (inp.value) setFontPt(inp.value);
+    });
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Enter') { e.preventDefault(); if (inp.value) setFontPt(inp.value); }
+    });
+  });
+
+  toolbar.querySelectorAll('input[type="color"][data-cmd]').forEach(inp => {
+    inp.addEventListener('input', () => {
+      const cmd = inp.dataset.cmd;
+      if (cmd === 'foreColor') exec('foreColor', inp.value);
+      else if (cmd === 'hiliteColor') setHighlight(inp.value);
+    });
+  });
+
+  /* --- Highlight active formatting buttons --- */
   function refreshButtonStates() {
-    ['bold','italic','underline','strikeThrough',
-     'justifyLeft','justifyCenter','justifyRight',
+    ['bold','italic','underline','strikeThrough','subscript','superscript',
+     'justifyLeft','justifyCenter','justifyRight','justifyFull',
      'insertUnorderedList','insertOrderedList'].forEach(cmd => {
       const btn = toolbar.querySelector(`button[data-cmd="${cmd}"]`);
       if (!btn) return;
@@ -1701,20 +1927,32 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
       try { on = document.queryCommandState(cmd); } catch(e) {}
       btn.classList.toggle('is-active', on);
     });
+    // Sync size input with caret position
+    const inp = toolbar.querySelector('.rt-size-input');
+    if (inp && !inp.matches(':focus')) inp.value = getCurrentPt();
   }
   ['keyup','mouseup','focus'].forEach(ev =>
     editor.addEventListener(ev, refreshButtonStates));
 
-  // Strip pasted formatting — keep only the safe subset.
+  /* --- Keyboard shortcuts: Tab indent, Shift+Tab outdent, Ctrl+]/[ size --- */
+  editor.addEventListener('keydown', e => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      exec(e.shiftKey ? 'outdent' : 'indent');
+    } else if ((e.ctrlKey || e.metaKey) && e.key === ']') {
+      e.preventDefault(); bumpPt(+1);
+    } else if ((e.ctrlKey || e.metaKey) && e.key === '[') {
+      e.preventDefault(); bumpPt(-1);
+    }
+  });
+
+  /* --- Strip pasted formatting beyond our safe subset --- */
   editor.addEventListener('paste', e => {
     e.preventDefault();
     const html = (e.clipboardData || window.clipboardData).getData('text/html');
     const text = (e.clipboardData || window.clipboardData).getData('text/plain');
-    if (html) {
-      document.execCommand('insertHTML', false, sanitizeHTML(html));
-    } else {
-      document.execCommand('insertText', false, text);
-    }
+    if (html) document.execCommand('insertHTML', false, sanitizeHTML(html));
+    else      document.execCommand('insertText', false, text);
   });
 })();
 
