@@ -200,12 +200,21 @@
   @media (min-width: 800px) {
     .rt-toolbar button, .rt-toolbar select { font-size: 13px; }
   }
+  /* Title row uses a single column so it stretches naturally;
+     body row spans the full width of its tab pane below it. */
+  #freewrite-fields { grid-template-columns: 1fr; }
+  .row.body-row     { grid-template-columns: 1fr; margin-top: 14px; }
+  .row.body-row .field { gap: 6px; }
+
   .rt-editor {
-    min-height: 90px; padding: 10px 12px;
-    font: inherit; font-size: 14px; line-height: 1.45;
-    overflow-y: auto; max-height: 280px;
+    min-height: 320px; padding: 14px 16px;
+    font: inherit; font-size: 15px; line-height: 1.55;
+    overflow-y: auto; max-height: 60vh;
     outline: none;
+    resize: vertical;        /* user can drag-resize taller */
   }
+  /* Make the wrap fill its row */
+  .row.body-row .rt-wrap { width: 100%; }
   .rt-editor:empty::before {
     content: attr(data-placeholder);
     color: #9aa1b1; pointer-events: none;
@@ -540,8 +549,11 @@
             <button type="button" data-preset="">Clear</button>
           </div>
         </div>
+      </div><!-- /freewrite-fields title row -->
+
+      <div class="row body-row" id="body-row">
         <div class="field">
-          <label for="body">Body text <span style="font-weight:400;color:#5d6679;">— select text, then click toolbar to format</span></label>
+          <label for="body">Body text <span style="font-weight:400;color:#5d6679;">— full editor below. Select text, use the ribbon to format. Tab/Shift+Tab to indent.</span></label>
           <div class="rt-wrap">
             <div class="rt-toolbar" role="toolbar" aria-label="Body formatting">
               <!-- Group: Font family & size (MS Word "Font" group) -->
@@ -1020,7 +1032,9 @@ function updateSlotInfo() {
 
 function updateContentType() {
   const t = $('contentType').value;
+  // Title + body rows are shown for free-write & structured; hidden for blank
   $('freewrite-fields').style.display  = (t === 'blank') ? 'none' : 'grid';
+  $('body-row').style.display          = (t === 'blank') ? 'none' : 'grid';
   $('structured-fields').style.display = (t === 'structured') ? 'grid' : 'none';
   // Dim the rich-text body when not in free-write mode
   const wrap = $('body').closest('.rt-wrap');
