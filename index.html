@@ -110,6 +110,71 @@
   .row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px 22px; }
   .row.cols-3 { grid-template-columns: repeat(3, 1fr); }
   .row.cols-4 { grid-template-columns: repeat(4, 1fr); }
+
+  /* ---------- Tabs ---------- */
+  .tabs {
+    display: flex; gap: 2px;
+    border-bottom: 2px solid #e5e8ef;
+    margin: 8px 0 14px;
+    overflow-x: auto;
+  }
+  .tab-btn {
+    font: inherit; font-size: 13px; font-weight: 600;
+    padding: 9px 14px; border: none; background: transparent;
+    color: #5d6679; cursor: pointer;
+    border-bottom: 3px solid transparent;
+    margin-bottom: -2px; white-space: nowrap;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .tab-btn:hover { color: #1a1d24; background: #f7f8fb; }
+  .tab-btn.active {
+    color: #2a7f4f; border-bottom-color: #2a7f4f;
+  }
+  .tab-btn .tab-num {
+    font-size: 10px; background: #e5e8ef; color: #5d6679;
+    padding: 1px 6px; border-radius: 999px; font-weight: 700;
+  }
+  .tab-btn.active .tab-num { background: #2a7f4f; color: #fff; }
+  .tab-pane { display: none; }
+  .tab-pane.active { display: block; }
+  .tab-pane > h2:first-child { margin-top: 4px; }
+
+  /* ---------- Rich text editor ---------- */
+  .rt-wrap {
+    border: 1px solid #cdd2dd; border-radius: 6px;
+    background: #fff; overflow: hidden;
+  }
+  .rt-wrap:focus-within { outline: 2px solid #2a7f4f; border-color: #2a7f4f; }
+  .rt-toolbar {
+    display: flex; flex-wrap: wrap; gap: 2px;
+    padding: 5px 6px; background: #f7f8fb;
+    border-bottom: 1px solid #e5e8ef;
+    align-items: center;
+  }
+  .rt-toolbar button, .rt-toolbar select {
+    font: inherit; font-size: 12px;
+    background: #fff; border: 1px solid #cdd2dd;
+    border-radius: 4px; padding: 4px 7px;
+    cursor: pointer; min-width: 28px;
+    color: #1a1d24;
+  }
+  .rt-toolbar button:hover { background: #eef2ff; border-color: #6b7adb; }
+  .rt-toolbar button.is-active { background: #2a7f4f; color: #fff; border-color: #2a7f4f; }
+  .rt-toolbar .sep { width: 1px; height: 20px; background: #cdd2dd; margin: 0 4px; }
+  .rt-toolbar select { padding: 3px 4px; min-width: 0; }
+  .rt-editor {
+    min-height: 90px; padding: 10px 12px;
+    font: inherit; font-size: 14px; line-height: 1.45;
+    overflow-y: auto; max-height: 280px;
+    outline: none;
+  }
+  .rt-editor:empty::before {
+    content: attr(data-placeholder);
+    color: #9aa1b1; pointer-events: none;
+  }
+  .rt-editor p { margin: 0 0 4px; }
+  .rt-editor p:last-child { margin-bottom: 0; }
+  .rt-editor ul, .rt-editor ol { margin: 4px 0; padding-left: 22px; }
   .field { display: flex; flex-direction: column; gap: 4px; }
   .field label { font-size: 12px; font-weight: 600; color: #3b4150; }
   .field input, .field select, .field textarea {
@@ -267,6 +332,28 @@
 
   .sticker.clip { overflow: hidden; }
 
+  /* Rich-text body inside stickers: keep B/I/U/sizing inherited
+     from the body-size CSS variable. Map HTML font[size=1..7] to
+     relative em multipliers so per-character resizing scales with
+     the sticker's overall body-size, not absolute pixels. */
+  .sticker .free font[size="1"], .sticker .free font[size="1"] * { font-size: 0.62em; }
+  .sticker .free font[size="2"], .sticker .free font[size="2"] * { font-size: 0.82em; }
+  .sticker .free font[size="3"], .sticker .free font[size="3"] * { font-size: 1.00em; }
+  .sticker .free font[size="4"], .sticker .free font[size="4"] * { font-size: 1.20em; }
+  .sticker .free font[size="5"], .sticker .free font[size="5"] * { font-size: 1.50em; }
+  .sticker .free font[size="6"], .sticker .free font[size="6"] * { font-size: 2.00em; }
+  .sticker .free font[size="7"], .sticker .free font[size="7"] * { font-size: 3.00em; }
+  .free-block .free font[size="1"], .free-block .free font[size="1"] * { font-size: 0.62em; }
+  .free-block .free font[size="2"], .free-block .free font[size="2"] * { font-size: 0.82em; }
+  .free-block .free font[size="3"], .free-block .free font[size="3"] * { font-size: 1.00em; }
+  .free-block .free font[size="4"], .free-block .free font[size="4"] * { font-size: 1.20em; }
+  .free-block .free font[size="5"], .free-block .free font[size="5"] * { font-size: 1.50em; }
+  .free-block .free font[size="6"], .free-block .free font[size="6"] * { font-size: 2.00em; }
+  .free-block .free font[size="7"], .free-block .free font[size="7"] * { font-size: 3.00em; }
+  /* Tighten paragraph margins inside small stickers */
+  .sticker .free p { margin: 0; }
+  .sticker .free ul, .sticker .free ol { margin: 0; padding-left: 14px; }
+
   .sheet.fullpage .grid,
   .sheet.halfpage .grid { display: none; }
   .free-block {
@@ -328,6 +415,16 @@
       requirement on every product sold in Nepal. Free to use — no signup, no cost.
     </div>
 
+    <!-- ============== TABS ============== -->
+    <nav class="tabs" role="tablist" aria-label="Form sections">
+      <button type="button" class="tab-btn" data-tab="setup"   role="tab"><span class="tab-num">1</span> 📋 Setup</button>
+      <button type="button" class="tab-btn active" data-tab="content" role="tab"><span class="tab-num">2</span> ✏️ Content</button>
+      <button type="button" class="tab-btn" data-tab="queue"   role="tab"><span class="tab-num">3</span> 🖨️ Queue &amp; Print</button>
+      <button type="button" class="tab-btn" data-tab="style"   role="tab"><span class="tab-num">4</span> 🎨 Style</button>
+    </nav>
+
+    <!-- ============== TAB: SETUP ============== -->
+    <div class="tab-pane" id="tab-setup" role="tabpanel">
     <!-- ===== Section A: Template ===== -->
     <h2>1 · Template / Mode</h2>
     <div class="row">
@@ -365,7 +462,10 @@
         <span class="hint">sheets × labels.</span>
       </div>
     </div>
+    </div><!-- /tab-setup -->
 
+    <!-- ============== TAB: CONTENT ============== -->
+    <div class="tab-pane active" id="tab-content" role="tabpanel">
     <!-- ===== Section C: Content library ===== -->
     <h2>3 · Content library
       <span style="text-transform:none;letter-spacing:0;font-weight:400;font-size:11px;color:#8a92a3;">
@@ -403,8 +503,45 @@
           </div>
         </div>
         <div class="field">
-          <label for="body">Body text</label>
-          <textarea id="body" placeholder="Type the content. Long text shrinks to fit."></textarea>
+          <label for="body">Body text <span style="font-weight:400;color:#5d6679;">— select text, then click toolbar to format</span></label>
+          <div class="rt-wrap">
+            <div class="rt-toolbar" role="toolbar" aria-label="Body formatting">
+              <button type="button" data-cmd="bold"       title="Bold (Ctrl+B)"><b>B</b></button>
+              <button type="button" data-cmd="italic"     title="Italic (Ctrl+I)"><i>I</i></button>
+              <button type="button" data-cmd="underline"  title="Underline (Ctrl+U)"><u>U</u></button>
+              <button type="button" data-cmd="strikeThrough" title="Strikethrough"><s>S</s></button>
+              <span class="sep"></span>
+              <button type="button" data-cmd="fontSizeUp"   title="Bigger text">A+</button>
+              <button type="button" data-cmd="fontSizeDown" title="Smaller text">a-</button>
+              <select data-cmd="fontSize" title="Set size">
+                <option value="">Size</option>
+                <option value="1">XS</option>
+                <option value="2">S</option>
+                <option value="3" selected>M</option>
+                <option value="4">L</option>
+                <option value="5">XL</option>
+                <option value="6">XXL</option>
+                <option value="7">Huge</option>
+              </select>
+              <span class="sep"></span>
+              <button type="button" data-cmd="justifyLeft"   title="Align left">⯇</button>
+              <button type="button" data-cmd="justifyCenter" title="Align center">≡</button>
+              <button type="button" data-cmd="justifyRight"  title="Align right">⯈</button>
+              <span class="sep"></span>
+              <button type="button" data-cmd="insertUnorderedList" title="Bullet list">• ☰</button>
+              <button type="button" data-cmd="insertOrderedList"   title="Numbered list">1. ☰</button>
+              <span class="sep"></span>
+              <input type="color" data-cmd="foreColor" title="Text color" value="#000000" style="width:28px;height:24px;padding:0;border:1px solid #cdd2dd;border-radius:4px;cursor:pointer;">
+              <span class="sep"></span>
+              <button type="button" data-cmd="removeFormat"  title="Clear formatting">⨯ Clear</button>
+            </div>
+            <div class="rt-editor"
+                 id="body"
+                 contenteditable="true"
+                 spellcheck="false"
+                 data-placeholder="Type the content. Select text and use the toolbar above for bold / italic / underline / size / color."></div>
+          </div>
+          <span class="hint">Long text auto-shrinks to fit each sticker (see Style tab).</span>
         </div>
       </div>
 
@@ -432,7 +569,10 @@
         <div class="lib-grid" id="library" style="margin-top:8px;"></div>
       </div>
     </div>
+    </div><!-- /tab-content -->
 
+    <!-- ============== TAB: QUEUE & PRINT ============== -->
+    <div class="tab-pane" id="tab-queue" role="tabpanel">
     <!-- ===== Section D: Print queue ===== -->
     <h2>4 · Print queue
       <span style="text-transform:none;letter-spacing:0;font-weight:400;font-size:11px;color:#8a92a3;">
@@ -483,7 +623,10 @@ One row per label. Header row optional (auto-detected).</pre>
         </div>
       </div>
     </div>
+    </div><!-- /tab-queue -->
 
+    <!-- ============== TAB: STYLE ============== -->
+    <div class="tab-pane" id="tab-style" role="tabpanel">
     <!-- ===== Section F: Typography + print options ===== -->
     <h2>6 · Typography
       <span style="text-transform:none;letter-spacing:0;font-weight:400;font-size:11px;color:#8a92a3;">
@@ -617,8 +760,10 @@ One row per label. Header row optional (auto-detected).</pre>
         <button type="button" class="btn btn-secondary btn-sm" onclick="resetTypography()">Reset typography to defaults</button>
       </div>
     </div>
+    </div><!-- /tab-style -->
 
-    <div class="actions">
+    <!-- ============== PERSISTENT ACTION BAR (visible on every tab) ============== -->
+    <div class="actions" style="margin-top:18px;padding-top:14px;border-top:1px solid #e5e8ef;">
       <button type="button" class="btn btn-primary" onclick="start()">Generate full sheet →</button>
       <button type="button" class="btn btn-secondary" onclick="if(confirm('Reset form (keeps library)?')){resetForm();}">Reset form</button>
     </div>
@@ -765,7 +910,58 @@ function updateContentType() {
   const t = $('contentType').value;
   $('freewrite-fields').style.display  = (t === 'blank') ? 'none' : 'grid';
   $('structured-fields').style.display = (t === 'structured') ? 'grid' : 'none';
-  $('body').disabled = (t !== 'freewrite');
+  // Dim the rich-text body when not in free-write mode
+  const wrap = $('body').closest('.rt-wrap');
+  if (wrap) wrap.style.opacity = (t === 'freewrite') ? '1' : '0.5';
+  $('body').setAttribute('contenteditable', (t === 'freewrite') ? 'true' : 'false');
+}
+
+/* ---------- Rich body helpers ---------- */
+function getBodyHTML() {
+  const el = $('body');
+  if (!el) return '';
+  // If completely empty, return empty string (avoids `<br>` noise)
+  const html = el.innerHTML.trim();
+  if (html === '<br>' || html === '<div><br></div>' || html === '') return '';
+  return sanitizeHTML(html);
+}
+function setBodyHTML(html) {
+  const el = $('body');
+  if (!el) return;
+  el.innerHTML = sanitizeHTML(html || '');
+}
+/* Allow only safe inline-format tags; strip scripts/event handlers. */
+function sanitizeHTML(html) {
+  const tpl = document.createElement('template');
+  tpl.innerHTML = String(html);
+  const allowed = new Set([
+    'B','STRONG','I','EM','U','S','STRIKE','SPAN','FONT','BR','P','DIV',
+    'UL','OL','LI','BLOCKQUOTE','SUP','SUB','MARK'
+  ]);
+  const safeAttrs = new Set(['style','color','size','face','align','class']);
+  (function walk(node){
+    [...node.childNodes].forEach(child => {
+      if (child.nodeType === 1) {
+        if (!allowed.has(child.tagName)) {
+          // Unwrap unknown tags (keep their text)
+          while (child.firstChild) node.insertBefore(child.firstChild, child);
+          node.removeChild(child);
+          return;
+        }
+        // Strip event handlers + javascript: URLs
+        [...child.attributes].forEach(a => {
+          const n = a.name.toLowerCase();
+          if (n.startsWith('on') || (!safeAttrs.has(n) && n !== 'href')) {
+            child.removeAttribute(a.name);
+          } else if (n === 'style' && /expression|javascript:/i.test(a.value)) {
+            child.removeAttribute(a.name);
+          }
+        });
+        walk(child);
+      }
+    });
+  })(tpl.content);
+  return tpl.innerHTML;
 }
 
 $('mode').addEventListener('change', updateSlotInfo);
@@ -796,7 +992,7 @@ function gatherContentFromForm() {
   return {
     type,
     title:  $('title').value.trim(),
-    body:   $('body').value,
+    body:   getBodyHTML(),
     f_name: $('f-name').value, f_addr: $('f-addr').value,
     f_phone:$('f-phone').value, f_ref:  $('f-ref').value,
     f_date: $('f-date').value, f_foot: $('f-foot').value,
@@ -861,7 +1057,7 @@ function loadPresetIntoForm(id) {
   $('presetName').value = p.name;
   $('contentType').value = p.type;
   $('title').value  = p.title  || '';
-  $('body').value   = p.body   || '';
+  setBodyHTML(p.body || '');
   $('f-name').value = p.f_name || ''; $('f-addr').value = p.f_addr || '';
   $('f-phone').value= p.f_phone|| ''; $('f-ref').value  = p.f_ref  || '';
   $('f-date').value = p.f_date || ''; $('f-foot').value = p.f_foot || '';
@@ -886,7 +1082,7 @@ function deletePreset(id) {
 }
 
 function clearContentFields() {
-  $('title').value = ''; $('body').value = '';
+  $('title').value = ''; setBodyHTML('');
   ['f-name','f-addr','f-phone','f-ref','f-date','f-foot'].forEach(id => $(id).value = '');
   $('presetName').value = '';
 }
@@ -1158,6 +1354,7 @@ function resetForm() {
   $('numbered').value = 'off';
   QUEUE = []; CSV_ROWS = null; $('csv').value = '';
   updateSlotInfo(); updateContentType(); renderQueue();
+  schedulePreview();
 }
 
 /* ============ Cell builders ============ */
@@ -1219,11 +1416,11 @@ function buildLabel(content, idx, sku, opts) {
     if (sku.h <= 24) {
       cell.innerHTML =
         `<div class="title" contenteditable="true">${escapeHtml(title)}</div>` +
-        (body ? `<div class="subline" contenteditable="true">${escapeHtml(body)}</div>` : '');
+        (body ? `<div class="subline" contenteditable="true">${renderBody(body)}</div>` : '');
     } else {
       cell.innerHTML =
         (title ? `<div class="title" contenteditable="true">${escapeHtml(title)}</div>` : '') +
-        `<div class="free" contenteditable="true">${escapeHtml(body)}</div>`;
+        `<div class="free" contenteditable="true">${renderBody(body)}</div>`;
     }
     return autoFit(cell, opts);
   }
@@ -1284,13 +1481,21 @@ function buildFreeBlock(content, idx, half, opts) {
   body = applyNum(body, idx, opts);
   blk.innerHTML =
     (title ? `<div class="title-big" contenteditable="true">${escapeHtml(title)}</div>` : '') +
-    `<div class="free" contenteditable="true">${escapeHtml(body)}</div>`;
+    `<div class="free" contenteditable="true">${renderBody(body)}</div>`;
   return blk;
 }
 
 /* ============ Helpers ============ */
 function escapeHtml(s) {
   return String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+/* Render body content: if it already contains HTML tags (rich
+   editor output), sanitize-and-pass-through; otherwise plain-text
+   escape so a stray < doesn't break layout. */
+function renderBody(s) {
+  const str = String(s ?? '');
+  if (/<[a-zA-Z][\s\S]*>/.test(str)) return sanitizeHTML(str);
+  return escapeHtml(str).replace(/\n/g, '<br>');
 }
 function toast(msg) {
   const t = $('toast'); t.textContent = msg;
@@ -1402,7 +1607,7 @@ renderQueue();
 // Wire live-preview updates to every relevant form input
 [
   'mode','sku','sheets','contentType',
-  'title','body',
+  'title',
   'f-name','f-addr','f-phone','f-ref','f-date','f-foot',
   'guides','font','align','numbered',
   'titleSize','bodySize','lineH',
@@ -1414,6 +1619,104 @@ renderQueue();
   el.addEventListener('input',  schedulePreview);
   el.addEventListener('change', schedulePreview);
 });
+
+// Body is a contenteditable — listen for input differently
+const _bodyEl = $('body');
+if (_bodyEl) {
+  _bodyEl.addEventListener('input', schedulePreview);
+  _bodyEl.addEventListener('blur',  schedulePreview);
+}
+
+// ====================== TABS ======================
+function activateTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.tab === name));
+  document.querySelectorAll('.tab-pane').forEach(p =>
+    p.classList.toggle('active', p.id === 'tab-' + name));
+}
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => activateTab(btn.dataset.tab));
+});
+
+// ====================== RICH-TEXT TOOLBAR ======================
+(function wireRichToolbar(){
+  const editor = $('body');
+  const toolbar = editor && editor.closest('.rt-wrap').querySelector('.rt-toolbar');
+  if (!editor || !toolbar) return;
+
+  // Keep selection inside the editor: refocus on toolbar button mousedown
+  toolbar.addEventListener('mousedown', e => {
+    if (e.target.closest('button, select, input[type=color]')) e.preventDefault();
+  });
+
+  function exec(cmd, value) {
+    editor.focus();
+    document.execCommand(cmd, false, value);
+    schedulePreview();
+    refreshButtonStates();
+  }
+
+  // Click handlers
+  toolbar.querySelectorAll('button[data-cmd]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const cmd = btn.dataset.cmd;
+      if (cmd === 'fontSizeUp')   return bumpFontSize(+1);
+      if (cmd === 'fontSizeDown') return bumpFontSize(-1);
+      exec(cmd);
+    });
+  });
+  toolbar.querySelectorAll('select[data-cmd], input[data-cmd]').forEach(ctrl => {
+    ctrl.addEventListener('input', () => {
+      if (ctrl.value) exec(ctrl.dataset.cmd, ctrl.value);
+    });
+  });
+
+  function bumpFontSize(delta) {
+    // execCommand fontSize uses HTML size 1..7; bump current up/down
+    editor.focus();
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    if (range.collapsed) return;            // need a selection
+    // Read first child's current size if available
+    const probe = document.createElement('font');
+    probe.size = 3;
+    // Re-apply at adjusted size
+    const cur = parseInt(getCurrentFontSize() || 3, 10);
+    const next = Math.max(1, Math.min(7, cur + delta));
+    exec('fontSize', String(next));
+  }
+  function getCurrentFontSize() {
+    return document.queryCommandValue('fontSize') || 3;
+  }
+
+  // Highlight active formatting buttons
+  function refreshButtonStates() {
+    ['bold','italic','underline','strikeThrough',
+     'justifyLeft','justifyCenter','justifyRight',
+     'insertUnorderedList','insertOrderedList'].forEach(cmd => {
+      const btn = toolbar.querySelector(`button[data-cmd="${cmd}"]`);
+      if (!btn) return;
+      let on = false;
+      try { on = document.queryCommandState(cmd); } catch(e) {}
+      btn.classList.toggle('is-active', on);
+    });
+  }
+  ['keyup','mouseup','focus'].forEach(ev =>
+    editor.addEventListener(ev, refreshButtonStates));
+
+  // Strip pasted formatting — keep only the safe subset.
+  editor.addEventListener('paste', e => {
+    e.preventDefault();
+    const html = (e.clipboardData || window.clipboardData).getData('text/html');
+    const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+    if (html) {
+      document.execCommand('insertHTML', false, sanitizeHTML(html));
+    } else {
+      document.execCommand('insertText', false, text);
+    }
+  });
+})();
 
 // Live-update the slider value labels
 ['titleSize','bodySize','lineH'].forEach(id => {
