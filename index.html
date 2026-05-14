@@ -959,9 +959,9 @@ const SKUS = [
   { code:"ST-20A4100", n:20, cols:2, rows:10, w:98.0,  h:28.000,  topM:8.500,  leftM:6.000, vp:28.000,  hp:100.000, word:"—",       desc:"Long thin" },
   { code:"ST-21A4100", n:21, cols:3, rows:7,  w:63.5,  h:38.100,  topM:15.088, leftM:7.188, vp:38.075,  hp:65.964,  word:"L-7160",  desc:"Avery L7160" },
   { code:"ST-24A4100", n:24, cols:3, rows:8,  w:64.0,  h:34.000,  topM:12.979, leftM:4.597, vp:33.858,  hp:66.472,  word:"L-7159",  desc:"Most common" },
-  { code:"ST-30A4100", n:30, cols:5, rows:6,  w:39.0,  h:47.500,  topM:2.499,  leftM:4.498, vp:49.276,  hp:40.498,  word:"—",       desc:"5×6 small" },
+  { code:"ST-30A4100", n:30, cols:5, rows:6,  w:39.0,  h:47.500,  topM:2.499,  leftM:4.498, vp:49.000,  hp:40.498,  word:"—",       desc:"5×6 small" },
   { code:"ST-33A4100", n:33, cols:3, rows:11, w:66.0,  h:25.400,  topM:8.890,  leftM:6.096, vp:25.400,  hp:66.040,  word:"—",       desc:"3×11 — your sheet" },
-  { code:"ST-40A4100", n:40, cols:4, rows:10, w:52.5,  h:29.700,  topM:0.000,  leftM:0.000, vp:52.476,  hp:29.693,  word:"Z-Weck 3651", desc:"4-col" },
+  { code:"ST-40A4100", n:40, cols:4, rows:10, w:52.5,  h:29.700,  topM:0.000,  leftM:0.000, vp:29.700,  hp:52.500,  word:"Z-Weck 3651", desc:"4-col edge-to-edge" },
   { code:"ST-48A4100", n:48, cols:4, rows:12, w:45.7,  h:21.100,  topM:21.336, leftM:9.652, vp:21.082,  hp:48.260,  word:"—",       desc:"Return address" },
   { code:"ST-56A4100", n:56, cols:4, rows:14, w:50.0,  h:20.100,  topM:9.144,  leftM:5.080, vp:20.066,  hp:50.038,  word:"—",       desc:"Barcode" },
   { code:"ST-65A4100", n:65, cols:5, rows:13, w:38.1,  h:21.200,  topM:10.897, leftM:4.191, vp:21.184,  hp:40.564,  word:"L-7651",  desc:"Avery L7651" },
@@ -970,6 +970,17 @@ const SKUS = [
 
 const $ = id => document.getElementById(id);
 const LS_KEY = 'oddy.printer.v1';
+
+/* Clamp a label's drawn size to its pitch so adjacent labels can never
+   visually overlap. The official Oddy table's printed label-height and
+   vertical-pitch values don't always perfectly reconcile (sub-0.5mm
+   rounding); this guarantees the rendered box never exceeds the cell. */
+function labelDims(s) {
+  return {
+    w: Math.min(s.w, s.hp),
+    h: Math.min(s.h, s.vp),
+  };
+}
 
 /* ============ Library state (localStorage) ============ */
 let LIB = { presets: [] };  // [{id, name, type, fields}]
@@ -1440,10 +1451,11 @@ function start() {
         for (let c = 0; c < s.cols; c++) {
           const content = CSV_ROWS ? csvToContent(csvRowFor(slotIdx)) : assignments[slotIdx];
           const cell = buildLabel(content, slotIdx+1, s, opts);
+          const d = labelDims(s);
           cell.style.top    = (s.topM  + r * s.vp) + 'mm';
           cell.style.left   = (s.leftM + c * s.hp) + 'mm';
-          cell.style.width  = s.w + 'mm';
-          cell.style.height = s.h + 'mm';
+          cell.style.width  = d.w + 'mm';
+          cell.style.height = d.h + 'mm';
           sheet.appendChild(cell);
           slotIdx++;
         }
@@ -1688,10 +1700,11 @@ function renderPreview() {
         const slotIdx = base + idxOnPage;
         const content = CSV_ROWS ? csvToContent(csvRowFor(slotIdx)) : assignments[slotIdx];
         const cell = buildLabel(content, slotIdx+1, s, opts);
+        const d = labelDims(s);
         cell.style.top    = (s.topM  + r * s.vp) + 'mm';
         cell.style.left   = (s.leftM + c * s.hp) + 'mm';
-        cell.style.width  = s.w + 'mm';
-        cell.style.height = s.h + 'mm';
+        cell.style.width  = d.w + 'mm';
+        cell.style.height = d.h + 'mm';
         // disable editing in preview cells
         cell.querySelectorAll('[contenteditable="true"]').forEach(e => e.removeAttribute('contenteditable'));
         sheet.appendChild(cell);
