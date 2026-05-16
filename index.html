@@ -465,9 +465,8 @@
     <!-- ============== TABS ============== -->
     <nav class="tabs" role="tablist" aria-label="Form sections">
       <button type="button" class="tab-btn" data-tab="setup"   role="tab"><span class="tab-num">1</span> 📋 Setup</button>
-      <button type="button" class="tab-btn active" data-tab="content" role="tab"><span class="tab-num">2</span> ✏️ Content</button>
+      <button type="button" class="tab-btn active" data-tab="content" role="tab"><span class="tab-num">2</span> ✏️ Content &amp; Style</button>
       <button type="button" class="tab-btn" data-tab="queue"   role="tab"><span class="tab-num">3</span> 🖨️ Queue &amp; Print</button>
-      <button type="button" class="tab-btn" data-tab="style"   role="tab"><span class="tab-num">4</span> 🎨 Style</button>
     </nav>
 
     <!-- ============== TAB: SETUP ============== -->
@@ -693,74 +692,17 @@
         <div class="lib-grid" id="library" style="margin-top:8px;"></div>
       </div>
     </div>
-    </div><!-- /tab-content -->
 
-    <!-- ============== TAB: QUEUE & PRINT ============== -->
-    <div class="tab-pane" id="tab-queue" role="tabpanel">
-    <!-- ===== Section D: Print queue ===== -->
-    <h2>4 · Print queue
+    <!-- ===== Section F: Typography (moved from Style tab into Content) ===== -->
+    <h2>4 · Sticker typography
       <span style="text-transform:none;letter-spacing:0;font-weight:400;font-size:11px;color:#8a92a3;">
-        — assign different content to ranges of labels
+        — applies to the printed sticker text; saved per preset
       </span>
     </h2>
     <div class="panel">
       <div class="row">
         <div class="field">
-          <label for="queuePick">Add preset to queue</label>
-          <select id="queuePick"></select>
-        </div>
-        <div class="field">
-          <label for="queueCount">How many labels to fill with it</label>
-          <input type="number" id="queueCount" min="1" value="1">
-          <span class="hint">Use "Rest" to fill all remaining slots.</span>
-        </div>
-      </div>
-      <div class="actions" style="margin-top:6px;">
-        <button type="button" class="btn btn-alt btn-sm" onclick="queueAdd(false)">+ Add</button>
-        <button type="button" class="btn btn-alt btn-sm" onclick="queueAdd(true)">+ Add rest</button>
-        <button type="button" class="btn btn-secondary btn-sm" onclick="queueClear()">Clear queue</button>
-      </div>
-
-      <div style="margin-top:14px;">
-        <div class="queue-list" id="queueList"></div>
-        <div class="queue-total" id="queueTotal">No items.</div>
-      </div>
-    </div>
-
-    <!-- ===== Section E: Bulk CSV ===== -->
-    <h2>5 · Bulk CSV (optional, overrides queue)</h2>
-    <div class="panel">
-      <div class="row">
-        <div class="field">
-          <label for="csv">CSV file</label>
-          <input type="file" id="csv" accept=".csv,text/csv">
-        </div>
-        <div class="field">
-          <label>&nbsp;</label>
-          <details>
-            <summary>CSV column format</summary>
-            <pre class="csv-help">free-write:   title, body
-structured:   title, name, address, phone, ref, date, footer
-
-One row per label. Header row optional (auto-detected).</pre>
-          </details>
-        </div>
-      </div>
-    </div>
-    </div><!-- /tab-queue -->
-
-    <!-- ============== TAB: STYLE ============== -->
-    <div class="tab-pane" id="tab-style" role="tabpanel">
-    <!-- ===== Section F: Typography + print options ===== -->
-    <h2>6 · Typography
-      <span style="text-transform:none;letter-spacing:0;font-weight:400;font-size:11px;color:#8a92a3;">
-        — also saved per preset
-      </span>
-    </h2>
-    <div class="panel">
-      <div class="row">
-        <div class="field">
-          <label for="font">Font family</label>
+          <label for="font">Font family (sticker default)</label>
           <select id="font">
             <optgroup label="Sans-serif">
               <option value="Inter, Helvetica, Arial, sans-serif" selected>Inter / Helvetica</option>
@@ -789,7 +731,7 @@ One row per label. Header row optional (auto-detected).</pre>
               <option value="'Brush Script MT', cursive">Brush Script</option>
             </optgroup>
           </select>
-          <span class="hint">Browser falls back if the font isn't installed.</span>
+          <span class="hint">Inline body formatting overrides this per word.</span>
         </div>
 
         <div class="field">
@@ -884,7 +826,63 @@ One row per label. Header row optional (auto-detected).</pre>
         <button type="button" class="btn btn-secondary btn-sm" onclick="resetTypography()">Reset typography to defaults</button>
       </div>
     </div>
-    </div><!-- /tab-style -->
+    </div><!-- /tab-content -->
+
+    <!-- ============== TAB: QUEUE & PRINT ============== -->
+    <div class="tab-pane" id="tab-queue" role="tabpanel">
+    <!-- ===== Section D: Print queue ===== -->
+    <h2>4 · Print queue
+      <span style="text-transform:none;letter-spacing:0;font-weight:400;font-size:11px;color:#8a92a3;">
+        — assign different content to ranges of labels
+      </span>
+    </h2>
+    <div class="panel">
+      <div class="row">
+        <div class="field">
+          <label for="queuePick">Add preset to queue</label>
+          <select id="queuePick"></select>
+        </div>
+        <div class="field">
+          <label for="queueCount">How many labels to fill with it</label>
+          <input type="number" id="queueCount" min="1" value="1">
+          <span class="hint">Use "Rest" to fill all remaining slots.</span>
+        </div>
+      </div>
+      <div class="actions" style="margin-top:6px;">
+        <button type="button" class="btn btn-alt btn-sm" onclick="queueAdd(false)">+ Add</button>
+        <button type="button" class="btn btn-alt btn-sm" onclick="queueAdd(true)">+ Add rest</button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="queueClear()">Clear queue</button>
+      </div>
+
+      <div style="margin-top:14px;">
+        <div class="queue-list" id="queueList"></div>
+        <div class="queue-total" id="queueTotal">No items.</div>
+      </div>
+    </div>
+
+    <!-- ===== Section E: Bulk CSV ===== -->
+    <h2>5 · Bulk CSV (optional, overrides queue)</h2>
+    <div class="panel">
+      <div class="row">
+        <div class="field">
+          <label for="csv">CSV file</label>
+          <input type="file" id="csv" accept=".csv,text/csv">
+        </div>
+        <div class="field">
+          <label>&nbsp;</label>
+          <details>
+            <summary>CSV column format</summary>
+            <pre class="csv-help">free-write:   title, body
+structured:   title, name, address, phone, ref, date, footer
+
+One row per label. Header row optional (auto-detected).</pre>
+          </details>
+        </div>
+      </div>
+    </div>
+    </div><!-- /tab-queue -->
+
+    <!-- Style tab removed: its controls now live inside the Content tab. -->
 
     <!-- ============== PERSISTENT ACTION BAR (visible on every tab) ============== -->
     <div class="actions" style="margin-top:18px;padding-top:14px;border-top:1px solid #e5e8ef;">
@@ -944,28 +942,34 @@ One row per label. Header row optional (auto-detected).</pre>
    vp/hp      = vertical/horizontal PITCH (top-of-label to top-of-next).
    w/h        = each label's width/height.
    gap between labels = pitch − dimension.                        */
+/* Values cross-verified against:
+   • Label Planet UK template specs (canonical for Avery L-codes)
+   • Avery / Zweckform / glabels-qt template XML
+   • Oddy India catalogue + the printed Dimensions Identification Table
+   For the few mismatches between sources we use the Avery/Label Planet
+   canonical layout because real printers are calibrated to those. */
 const SKUS = [
-  { code:"ST-1A4100",  n:1,  cols:1, rows:1,  w:199.6, h:289.000, topM:3.378,  leftM:5.182, vp:289.052, hp:199.644, word:"L-7167",  desc:"1 full sheet" },
-  { code:"ST-2A4100",  n:2,  cols:1, rows:2,  w:199.6, h:143.600, topM:4.877,  leftM:5.182, vp:143.510, hp:199.644, word:"L-7168",  desc:"2 large" },
-  { code:"ST-4A4100",  n:4,  cols:2, rows:2,  w:99.1,  h:139.000, topM:9.500,  leftM:4.597, vp:138.938, hp:101.600, word:"L-7169",  desc:"Shipping" },
-  { code:"ST-6A4100",  n:6,  cols:2, rows:3,  w:99.1,  h:93.400,  topM:8.788,  leftM:4.699, vp:93.472,  hp:101.600, word:"L-7166",  desc:"Big" },
-  { code:"ST-6SA4100", n:6,  cols:2, rows:3,  w:90.0,  h:80.000,  topM:28.5,   leftM:13.0,  vp:80.0,    hp:92.0,    word:"—",       desc:"Special 6-up (approx)" },
-  { code:"ST-8A4100",  n:8,  cols:2, rows:4,  w:99.1,  h:67.700,  topM:12.979, leftM:4.496, vp:67.818,  hp:101.600, word:"L-7165",  desc:"Address/Folder" },
-  { code:"ST-10A4100", n:10, cols:2, rows:5,  w:99.1,  h:57.000,  topM:5.994,  leftM:4.597, vp:56.896,  hp:101.778, word:"L-7173",  desc:"Address" },
-  { code:"ST-12A4100", n:12, cols:2, rows:6,  w:100.0, h:44.150,  topM:7.620,  leftM:3.810, vp:46.482,  hp:103.124, word:"—",       desc:"Address" },
-  { code:"ST-14A4100", n:14, cols:2, rows:7,  w:99.06, h:38.400,  topM:15.088, leftM:4.597, vp:38.075,  hp:101.600, word:"L-7163",  desc:"Address" },
-  { code:"ST-16A4100", n:16, cols:2, rows:8,  w:99.1,  h:33.900,  topM:12.979, leftM:4.597, vp:33.884,  hp:101.473, word:"L-7162",  desc:"Address" },
-  { code:"ST-18A4100", n:18, cols:3, rows:6,  w:63.5,  h:46.600,  topM:8.788,  leftM:7.188, vp:46.584,  hp:65.964,  word:"L-7161",  desc:"3-col medium" },
-  { code:"ST-20A4100", n:20, cols:2, rows:10, w:98.0,  h:28.000,  topM:8.500,  leftM:6.000, vp:28.000,  hp:100.000, word:"—",       desc:"Long thin" },
-  { code:"ST-21A4100", n:21, cols:3, rows:7,  w:63.5,  h:38.100,  topM:15.088, leftM:7.188, vp:38.075,  hp:65.964,  word:"L-7160",  desc:"Avery L7160" },
-  { code:"ST-24A4100", n:24, cols:3, rows:8,  w:64.0,  h:34.000,  topM:12.979, leftM:4.597, vp:33.858,  hp:66.472,  word:"L-7159",  desc:"Most common" },
-  { code:"ST-30A4100", n:30, cols:5, rows:6,  w:39.0,  h:47.500,  topM:2.499,  leftM:4.498, vp:49.000,  hp:40.498,  word:"—",       desc:"5×6 small" },
-  { code:"ST-33A4100", n:33, cols:3, rows:11, w:66.0,  h:25.400,  topM:8.890,  leftM:6.096, vp:25.400,  hp:66.040,  word:"—",       desc:"3×11 — your sheet" },
-  { code:"ST-40A4100", n:40, cols:4, rows:10, w:52.5,  h:29.700,  topM:0.000,  leftM:0.000, vp:29.700,  hp:52.500,  word:"Z-Weck 3651", desc:"4-col edge-to-edge" },
-  { code:"ST-48A4100", n:48, cols:4, rows:12, w:45.7,  h:21.100,  topM:21.336, leftM:9.652, vp:21.082,  hp:48.260,  word:"—",       desc:"Return address" },
-  { code:"ST-56A4100", n:56, cols:4, rows:14, w:50.0,  h:20.100,  topM:9.144,  leftM:5.080, vp:20.066,  hp:50.038,  word:"—",       desc:"Barcode" },
-  { code:"ST-65A4100", n:65, cols:5, rows:13, w:38.1,  h:21.200,  topM:10.897, leftM:4.191, vp:21.184,  hp:40.564,  word:"L-7651",  desc:"Avery L7651" },
-  { code:"ST-84A4100", n:84, cols:4, rows:21, w:46.0,  h:11.000,  topM:15.875, leftM:4.978, vp:12.675,  hp:50.673,  word:"L-7656",  desc:"Tiny price" },
+  { code:"ST-1A4100",  n:1,  cols:1, rows:1,  w:199.6, h:289.1, topM:3.95,  leftM:5.20, vp:289.10, hp:199.60, word:"L7167", desc:"1 full sheet" },
+  { code:"ST-2A4100",  n:2,  cols:1, rows:2,  w:199.6, h:143.5, topM:5.00,  leftM:5.20, vp:143.50, hp:199.60, word:"L7168", desc:"2 large" },
+  { code:"ST-4A4100",  n:4,  cols:2, rows:2,  w:99.1,  h:139.0, topM:9.50,  leftM:4.65, vp:139.00, hp:101.60, word:"L7169", desc:"Shipping" },
+  { code:"ST-6A4100",  n:6,  cols:2, rows:3,  w:99.1,  h:93.1,  topM:8.85,  leftM:4.65, vp:93.10,  hp:101.60, word:"L7166", desc:"Big" },
+  { code:"ST-6SA4100", n:6,  cols:2, rows:3,  w:90.0,  h:80.0,  topM:28.50, leftM:15.0, vp:80.00,  hp:90.00,  word:"—",     desc:"Special 6-up (Oddy custom)" },
+  { code:"ST-8A4100",  n:8,  cols:2, rows:4,  w:99.1,  h:67.7,  topM:13.10, leftM:4.65, vp:67.70,  hp:101.60, word:"L7165", desc:"Address / folder" },
+  { code:"ST-10A4100", n:10, cols:2, rows:5,  w:99.1,  h:57.0,  topM:6.00,  leftM:4.65, vp:57.00,  hp:101.60, word:"L7173", desc:"Address" },
+  { code:"ST-12A4100", n:12, cols:2, rows:6,  w:99.1,  h:42.3,  topM:21.60, leftM:4.65, vp:42.30,  hp:101.60, word:"—",     desc:"Address (LP12/99)" },
+  { code:"ST-14A4100", n:14, cols:2, rows:7,  w:99.1,  h:38.1,  topM:15.15, leftM:4.65, vp:38.10,  hp:101.60, word:"L7163", desc:"Address" },
+  { code:"ST-16A4100", n:16, cols:2, rows:8,  w:99.1,  h:33.9,  topM:12.90, leftM:4.65, vp:33.90,  hp:101.60, word:"L7162", desc:"Address" },
+  { code:"ST-18A4100", n:18, cols:3, rows:6,  w:63.5,  h:46.6,  topM:8.70,  leftM:7.25, vp:46.60,  hp:66.00,  word:"L7161", desc:"3-col medium" },
+  { code:"ST-20A4100", n:20, cols:2, rows:10, w:98.0,  h:28.0,  topM:8.50,  leftM:7.00, vp:28.00,  hp:101.00, word:"—",     desc:"Long thin" },
+  { code:"ST-21A4100", n:21, cols:3, rows:7,  w:63.5,  h:38.1,  topM:15.15, leftM:7.25, vp:38.10,  hp:66.00,  word:"L7160", desc:"Avery L7160" },
+  { code:"ST-24A4100", n:24, cols:3, rows:8,  w:63.5,  h:33.9,  topM:12.90, leftM:7.25, vp:33.90,  hp:66.00,  word:"L7159", desc:"Most common (Avery L7159)" },
+  { code:"ST-30A4100", n:30, cols:5, rows:6,  w:39.0,  h:47.5,  topM:6.00,  leftM:7.50, vp:47.50,  hp:40.50,  word:"—",     desc:"5×6 small (Oddy custom)" },
+  { code:"ST-33A4100", n:33, cols:3, rows:11, w:66.0,  h:25.4,  topM:9.65,  leftM:6.00, vp:25.40,  hp:66.00,  word:"Herma 4275", desc:"3×11 — your sheet" },
+  { code:"ST-40A4100", n:40, cols:4, rows:10, w:52.5,  h:29.7,  topM:0.00,  leftM:0.00, vp:29.70,  hp:52.50,  word:"Zweck 3651", desc:"4-col edge-to-edge" },
+  { code:"ST-48A4100", n:48, cols:4, rows:12, w:45.7,  h:21.2,  topM:21.30, leftM:9.85, vp:21.20,  hp:48.20,  word:"Zweck 4736", desc:"Return address" },
+  { code:"ST-56A4100", n:56, cols:4, rows:14, w:50.0,  h:20.0,  topM:8.50,  leftM:5.00, vp:20.00,  hp:50.00,  word:"Agipa 119098", desc:"Barcode (Oddy 50×20)" },
+  { code:"ST-65A4100", n:65, cols:5, rows:13, w:38.1,  h:21.2,  topM:10.70, leftM:4.75, vp:21.20,  hp:40.60,  word:"L7651", desc:"Avery L7651" },
+  { code:"ST-84A4100", n:84, cols:4, rows:21, w:46.0,  h:11.1,  topM:15.95, leftM:5.95, vp:12.70,  hp:50.70,  word:"L7656", desc:"Tiny price" },
 ];
 
 const $ = id => document.getElementById(id);
@@ -1783,41 +1787,94 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
   const toolbar = editor && editor.closest('.rt-wrap').querySelector('.rt-toolbar');
   if (!editor || !toolbar) return;
 
-  // Prefer style-based formatting (font-size in pt, color CSS) over deprecated tags.
-  try { document.execCommand('styleWithCSS', false, true); } catch(e) {}
+  /* Track the user's last in-editor selection so toolbar clicks
+     (which steal focus + collapse the selection) can restore it. */
+  let savedRange = null;
+  function saveSelection() {
+    const sel = window.getSelection();
+    if (sel.rangeCount === 0) return;
+    const r = sel.getRangeAt(0);
+    if (editor.contains(r.commonAncestorContainer)) {
+      savedRange = r.cloneRange();
+    }
+  }
+  function restoreSelection() {
+    editor.focus();
+    if (!savedRange) return false;
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(savedRange);
+    return true;
+  }
+  editor.addEventListener('keyup',   saveSelection);
+  editor.addEventListener('mouseup', saveSelection);
+  editor.addEventListener('blur',    saveSelection);
 
-  // Keep selection inside the editor: refocus on toolbar button mousedown
+  // Toolbar mousedown: save selection AND prevent focus theft
   toolbar.addEventListener('mousedown', e => {
-    if (e.target.closest('button, select, input[type=color], input[type=number], .rt-color-wrap')) {
-      e.preventDefault();   // prevent losing selection
+    saveSelection();
+    if (e.target.closest('button, select, input, .rt-color-wrap, .rt-color-wrap *')) {
+      // Don't preventDefault on the <input> itself (need it focusable for typing)
+      // but do prevent on buttons / labels so caret stays in editor.
+      if (!e.target.matches('input[type=number], input[type=color], select')) {
+        e.preventDefault();
+      }
     }
   });
 
+  // Restore selection before any toolbar-initiated formatting fires.
+  function ensureSelection() {
+    // If editor doesn't have focus or selection isn't inside it, restore.
+    const sel = window.getSelection();
+    const inEditor = sel.rangeCount && editor.contains(sel.getRangeAt(0).commonAncestorContainer);
+    if (!inEditor) return restoreSelection();
+    return true;
+  }
+
+  // Prefer CSS-style formatting consistently.
+  function ensureStyleWithCSS() {
+    try { document.execCommand('styleWithCSS', false, true); } catch(e) {}
+  }
+
   function exec(cmd, value) {
-    editor.focus();
+    ensureStyleWithCSS();
+    ensureSelection();
     document.execCommand(cmd, false, value);
+    saveSelection();
     schedulePreview();
     refreshButtonStates();
   }
 
-  /* --- Wrap selection in span style="..." (used for font-size/line-height) --- */
+  /* --- Wrap selection in span style="..." (used for font-size/line-height).
+       If selection is collapsed, sets the style on a zero-width marker so the
+       NEXT typed character starts in the new style. --- */
   function wrapSelectionStyle(styleProp, styleVal) {
-    editor.focus();
+    ensureSelection();
     const sel = window.getSelection();
     if (!sel.rangeCount) return;
     const range = sel.getRangeAt(0);
-    if (range.collapsed) return;
     const span = document.createElement('span');
     span.style[styleProp] = styleVal;
-    try {
-      const frag = range.extractContents();
-      span.appendChild(frag);
+    if (range.collapsed) {
+      // Inject a zero-width span at caret so future typing inherits style
+      span.appendChild(document.createTextNode('​'));
       range.insertNode(span);
-      // Reset selection across the new span
+      // Move caret inside the span, after the ZWSP, so user keeps typing
       const nr = document.createRange();
-      nr.selectNodeContents(span);
+      nr.setStart(span.firstChild, 1);
+      nr.collapse(true);
       sel.removeAllRanges(); sel.addRange(nr);
-    } catch (e) { /* selection across block boundaries — fall back to execCommand */ }
+    } else {
+      try {
+        const frag = range.extractContents();
+        span.appendChild(frag);
+        range.insertNode(span);
+        const nr = document.createRange();
+        nr.selectNodeContents(span);
+        sel.removeAllRanges(); sel.addRange(nr);
+      } catch (e) { /* selection across block boundaries */ }
+    }
+    saveSelection();
     schedulePreview();
   }
 
@@ -1844,20 +1901,36 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     setFontPt(next);
   }
 
-  /* --- Case transforms --- */
+  /* --- Case transforms: walk every text node in the selection and
+     transform in place so existing bold/color/size are preserved. --- */
   function transformCase(mode) {
-    editor.focus();
+    ensureSelection();
     const sel = window.getSelection();
     if (!sel.rangeCount) return;
     const range = sel.getRangeAt(0);
-    if (range.collapsed) return;
-    const text = range.toString();
-    let out = text;
-    if (mode === 'upper') out = text.toUpperCase();
-    else if (mode === 'lower') out = text.toLowerCase();
-    else if (mode === 'title') out = text.replace(/\w\S*/g, w =>
-      w[0].toUpperCase() + w.slice(1).toLowerCase());
-    document.execCommand('insertText', false, out);
+    if (range.collapsed) { toast && toast('Select text first to change case.'); return; }
+    const transform = (s) => mode === 'upper' ? s.toUpperCase()
+                          : mode === 'lower' ? s.toLowerCase()
+                          : s.replace(/\w\S*/g, w => w[0].toUpperCase() + w.slice(1).toLowerCase());
+    // Find every text node intersecting the range
+    const walker = document.createTreeWalker(
+      range.commonAncestorContainer,
+      NodeFilter.SHOW_TEXT,
+      { acceptNode: n => range.intersectsNode(n) ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT }
+    );
+    const textNodes = [];
+    let n; while ((n = walker.nextNode())) textNodes.push(n);
+    textNodes.forEach(node => {
+      const start = (node === range.startContainer) ? range.startOffset : 0;
+      const end   = (node === range.endContainer)   ? range.endOffset   : node.length;
+      if (start < end) {
+        const before = node.textContent.slice(0, start);
+        const mid    = transform(node.textContent.slice(start, end));
+        const after  = node.textContent.slice(end);
+        node.textContent = before + mid + after;
+      }
+    });
+    saveSelection();
     schedulePreview();
   }
 
@@ -1872,9 +1945,23 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     schedulePreview();
   }
   function clearHighlight() {
-    editor.focus();
-    // Clearing highlight: easiest is to apply transparent then strip via sanitize on save
-    setHighlight('transparent');
+    ensureSelection();
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    if (range.collapsed) return;
+    // Walk every element node intersecting the range and clear background-color
+    const root = range.commonAncestorContainer.nodeType === 1
+                ? range.commonAncestorContainer
+                : range.commonAncestorContainer.parentNode;
+    root.querySelectorAll('*').forEach(el => {
+      if (range.intersectsNode(el) && el.style && el.style.backgroundColor) {
+        el.style.backgroundColor = '';
+        if (!el.getAttribute('style')) el.removeAttribute('style');
+      }
+    });
+    saveSelection();
+    schedulePreview();
   }
 
   /* --- Line height: wrap selected block(s) --- */
@@ -1919,10 +2006,13 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
       const cmd = sel.dataset.cmd;
       const val = sel.value;
       if (!val) return;
-      if (cmd === 'setFontPt')   setFontPt(val);
-      else if (cmd === 'lineHeight') setLineHeight(val);
-      else exec(cmd, val);
-      sel.value = '';   // reset so same value can be re-picked
+      if (cmd === 'setFontPt')        setFontPt(val);
+      else if (cmd === 'lineHeight')  setLineHeight(val);
+      else if (cmd === 'fontName')    exec('fontName', val);
+      else                            exec(cmd, val);
+      // Keep size-pick value visible if it has real numbers; reset
+      // sentinel-only dropdowns (font, lineHeight) so the placeholder reshows
+      if (cmd !== 'setFontPt') sel.value = '';
     });
   });
 
