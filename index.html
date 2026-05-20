@@ -180,6 +180,11 @@
   .rt-toolbar .rt-size-input { width: 48px; text-align: center; }
   .rt-toolbar .rt-size-pick  { width: 56px; }
   .rt-toolbar .rt-line       { width: 64px; }
+  .rt-toolbar .rt-style      { min-width: 90px; }
+  /* Format painter active state */
+  .rt-toolbar button[data-cmd="formatPainter"].is-armed {
+    background: #ffc107; color: #1a1d24; border-color: #ffa000;
+  }
 
   /* Color swatches MS-Word style: letter on top, color strip below */
   .rt-color-wrap {
@@ -555,6 +560,18 @@
           <label for="body">Body text <span style="font-weight:400;color:#5d6679;">— full editor below. Select text, use the ribbon to format. Tab/Shift+Tab to indent.</span></label>
           <div class="rt-wrap">
             <div class="rt-toolbar" role="toolbar" aria-label="Body formatting">
+              <!-- Group: Quick styles (Word's Title / Heading 1 / 2 / 3 / Normal) -->
+              <div class="rt-group" title="Quick style">
+                <select data-cmd="quickStyle" class="rt-style" title="Quick style preset">
+                  <option value="">Style</option>
+                  <option value="normal">Normal</option>
+                  <option value="title">Title (18pt bold)</option>
+                  <option value="heading">Heading (14pt bold)</option>
+                  <option value="subhead">Subhead (11pt bold)</option>
+                  <option value="caption">Caption (7pt italic)</option>
+                </select>
+              </div>
+
               <!-- Group: Font family & size (MS Word "Font" group) -->
               <div class="rt-group" title="Font">
                 <select data-cmd="fontName" class="rt-font" title="Font family">
@@ -651,11 +668,22 @@
                 </select>
               </div>
 
-              <!-- Group: History + clear -->
+              <!-- Group: Insert (hyperlink, image, symbol) -->
+              <div class="rt-group" title="Insert">
+                <button type="button" data-cmd="createLink"   title="Insert hyperlink (Ctrl+K)">🔗</button>
+                <button type="button" data-cmd="unlink"       title="Remove hyperlink">⛓̸</button>
+                <button type="button" data-cmd="insertImage"  title="Insert image / logo">🖼</button>
+                <button type="button" data-cmd="insertSymbol" title="Insert symbol (₹, °, ™, ©, etc.)">Ω</button>
+                <button type="button" data-cmd="insertHr"     title="Horizontal rule">—</button>
+              </div>
+
+              <!-- Group: History + format painter + clear -->
               <div class="rt-group" title="Actions">
-                <button type="button" data-cmd="undo" title="Undo (Ctrl+Z)">↶</button>
-                <button type="button" data-cmd="redo" title="Redo (Ctrl+Y)">↷</button>
-                <button type="button" data-cmd="removeFormat" title="Clear formatting">⨯ Clear</button>
+                <button type="button" data-cmd="undo"          title="Undo (Ctrl+Z)">↶</button>
+                <button type="button" data-cmd="redo"          title="Redo (Ctrl+Y)">↷</button>
+                <button type="button" data-cmd="formatPainter" title="Format painter — copy style from selection, then click target">🖌</button>
+                <button type="button" data-cmd="selectAll"     title="Select all (Ctrl+A)">All</button>
+                <button type="button" data-cmd="removeFormat"  title="Clear formatting">⨯</button>
               </div>
             </div>
             <div class="rt-editor"
@@ -693,138 +721,50 @@
       </div>
     </div>
 
-    <!-- ===== Section F: Typography (moved from Style tab into Content) ===== -->
-    <h2>4 · Sticker typography
-      <span style="text-transform:none;letter-spacing:0;font-weight:400;font-size:11px;color:#8a92a3;">
-        — applies to the printed sticker text; saved per preset
-      </span>
-    </h2>
-    <div class="panel">
-      <div class="row">
-        <div class="field">
-          <label for="font">Font family (sticker default)</label>
-          <select id="font">
-            <optgroup label="Sans-serif">
-              <option value="Inter, Helvetica, Arial, sans-serif" selected>Inter / Helvetica</option>
-              <option value="Arial, sans-serif">Arial</option>
-              <option value="'Segoe UI', Tahoma, sans-serif">Segoe UI</option>
-              <option value="Verdana, Geneva, sans-serif">Verdana</option>
-              <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
-              <option value="Tahoma, sans-serif">Tahoma</option>
-              <option value="'Roboto', Helvetica, sans-serif">Roboto</option>
-            </optgroup>
-            <optgroup label="Serif">
-              <option value="'Times New Roman', Times, serif">Times New Roman</option>
-              <option value="Georgia, serif">Georgia</option>
-              <option value="'Palatino Linotype', 'Book Antiqua', Palatino, serif">Palatino</option>
-              <option value="'Garamond', serif">Garamond</option>
-              <option value="'Cambria', Georgia, serif">Cambria</option>
-            </optgroup>
-            <optgroup label="Monospace">
-              <option value="'Courier New', Courier, monospace">Courier New</option>
-              <option value="'Lucida Console', Monaco, monospace">Lucida Console</option>
-              <option value="'Consolas', monospace">Consolas</option>
-            </optgroup>
-            <optgroup label="Display / special">
-              <option value="'Impact', 'Arial Narrow', sans-serif">Impact</option>
-              <option value="'Comic Sans MS', cursive">Comic Sans</option>
-              <option value="'Brush Script MT', cursive">Brush Script</option>
-            </optgroup>
-          </select>
-          <span class="hint">Inline body formatting overrides this per word.</span>
-        </div>
-
-        <div class="field">
-          <label for="align">Text alignment</label>
-          <select id="align">
-            <option value="left" selected>Left</option>
-            <option value="center">Center</option>
-            <option value="right">Right</option>
-            <option value="justify">Justify</option>
-          </select>
-        </div>
+    <!-- ===== Section 4: Print options (compact — formatting lives in body editor) ===== -->
+    <h2>4 · Print options</h2>
+    <div class="row cols-3">
+      <div class="field">
+        <label for="guides">Cut guides on print</label>
+        <select id="guides">
+          <option value="hide" selected>Hide</option>
+          <option value="show">Show</option>
+        </select>
       </div>
-
-      <div class="row cols-3" style="margin-top:10px;">
-        <div class="field">
-          <label for="titleSize">Title size <span id="titleSize-val" style="font-weight:400;color:#5d6679;">10 pt</span></label>
-          <input type="range" id="titleSize" min="6" max="36" step="0.5" value="10">
-        </div>
-        <div class="field">
-          <label for="bodySize">Body size <span id="bodySize-val" style="font-weight:400;color:#5d6679;">8.5 pt</span></label>
-          <input type="range" id="bodySize" min="5" max="22" step="0.5" value="8.5">
-        </div>
-        <div class="field">
-          <label for="lineH">Line height <span id="lineH-val" style="font-weight:400;color:#5d6679;">1.30</span></label>
-          <input type="range" id="lineH" min="1.0" max="2.0" step="0.05" value="1.30">
-        </div>
+      <div class="field">
+        <label for="numbered">Auto-number labels</label>
+        <select id="numbered">
+          <option value="off" selected>Off</option>
+          <option value="suffix">Append #1, #2, #3 …</option>
+        </select>
       </div>
-
-      <div class="row cols-3" style="margin-top:10px;">
-        <div class="field">
-          <label for="titleWeight">Title weight</label>
-          <select id="titleWeight">
-            <option value="400">Regular</option>
-            <option value="500">Medium</option>
-            <option value="600">Semibold</option>
-            <option value="700" selected>Bold</option>
-            <option value="800">Extra-bold</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="bodyWeight">Body weight</label>
-          <select id="bodyWeight">
-            <option value="300">Light</option>
-            <option value="400" selected>Regular</option>
-            <option value="500">Medium</option>
-            <option value="600">Semibold</option>
-            <option value="700">Bold</option>
-          </select>
-        </div>
-        <div class="field">
-          <label>Style</label>
-          <div style="display:flex;gap:8px;align-items:center;padding-top:4px;">
-            <label style="font-weight:400;font-size:12px;display:flex;gap:4px;align-items:center;cursor:pointer;">
-              <input type="checkbox" id="italic"> <i>Italic</i>
-            </label>
-            <label style="font-weight:400;font-size:12px;display:flex;gap:4px;align-items:center;cursor:pointer;">
-              <input type="checkbox" id="upper" checked> <b>UPPER title</b>
-            </label>
-            <label style="font-weight:400;font-size:12px;display:flex;gap:4px;align-items:center;cursor:pointer;">
-              <input type="checkbox" id="underline"> <u>Title underline</u>
-            </label>
-          </div>
-        </div>
+      <div class="field">
+        <label for="fitMode">Long-text fit</label>
+        <select id="fitMode">
+          <option value="auto" selected>Auto-shrink to fit</option>
+          <option value="fixed">Fixed size (may overflow)</option>
+          <option value="clip">Clip overflow</option>
+        </select>
       </div>
+    </div>
 
-      <div class="row cols-3" style="margin-top:10px;">
-        <div class="field">
-          <label for="guides">Cut guides</label>
-          <select id="guides">
-            <option value="hide" selected>Hide on print</option>
-            <option value="show">Show on print</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="numbered">Auto-number</label>
-          <select id="numbered">
-            <option value="off" selected>Off</option>
-            <option value="suffix">Append #1, #2, #3 …</option>
-          </select>
-        </div>
-        <div class="field">
-          <label for="fitMode">Long-text fit</label>
-          <select id="fitMode">
-            <option value="auto" selected>Auto-shrink to fit</option>
-            <option value="fixed">Fixed size (may overflow)</option>
-            <option value="clip">Clip overflow</option>
-          </select>
-        </div>
-      </div>
-
-      <div class="actions" style="margin-top:10px;">
-        <button type="button" class="btn btn-secondary btn-sm" onclick="resetTypography()">Reset typography to defaults</button>
-      </div>
+    <!-- Sticker-default typography lives here as hidden inputs so the renderer
+         has sensible fall-backs when no inline body formatting is set. The user
+         controls typography via the rich-text ribbon above, per selection. -->
+    <div style="display:none;" aria-hidden="true">
+      <input type="hidden" id="font"        value="Inter, Helvetica, Arial, sans-serif">
+      <input type="hidden" id="align"       value="left">
+      <input type="hidden" id="titleSize"   value="10">
+      <input type="hidden" id="bodySize"    value="8.5">
+      <input type="hidden" id="lineH"       value="1.30">
+      <input type="hidden" id="titleWeight" value="700">
+      <input type="hidden" id="bodyWeight"  value="400">
+      <input type="checkbox" id="italic">
+      <input type="checkbox" id="upper" checked>
+      <input type="checkbox" id="underline">
+      <span id="titleSize-val"></span>
+      <span id="bodySize-val"></span>
+      <span id="lineH-val"></span>
     </div>
     </div><!-- /tab-content -->
 
@@ -1077,9 +1017,14 @@ function sanitizeHTML(html) {
   tpl.innerHTML = String(html);
   const allowed = new Set([
     'B','STRONG','I','EM','U','S','STRIKE','SPAN','FONT','BR','P','DIV',
-    'UL','OL','LI','BLOCKQUOTE','SUP','SUB','MARK'
+    'UL','OL','LI','BLOCKQUOTE','SUP','SUB','MARK',
+    'A','IMG','HR','H1','H2','H3','H4','H5','H6'
   ]);
-  const safeAttrs = new Set(['style','color','size','face','align','class']);
+  const safeAttrs = new Set([
+    'style','color','size','face','align','class',
+    'href','target','rel','src','alt','width','height','title'
+  ]);
+  const safeUrlScheme = /^(https?:|mailto:|tel:|data:image\/(png|jpe?g|gif|webp|svg\+xml);base64,|#|\/)/i;
   (function walk(node){
     [...node.childNodes].forEach(child => {
       if (child.nodeType === 1) {
@@ -1089,12 +1034,14 @@ function sanitizeHTML(html) {
           node.removeChild(child);
           return;
         }
-        // Strip event handlers + javascript: URLs
+        // Strip event handlers + dangerous URL schemes + non-safe attrs
         [...child.attributes].forEach(a => {
           const n = a.name.toLowerCase();
-          if (n.startsWith('on') || (!safeAttrs.has(n) && n !== 'href')) {
+          if (n.startsWith('on') || !safeAttrs.has(n)) {
             child.removeAttribute(a.name);
           } else if (n === 'style' && /expression|javascript:/i.test(a.value)) {
+            child.removeAttribute(a.name);
+          } else if ((n === 'href' || n === 'src') && !safeUrlScheme.test(a.value)) {
             child.removeAttribute(a.name);
           }
         });
@@ -1985,17 +1932,201 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     }
   }
 
+  /* --- Quick-style presets (Word's Title / Heading 1 / 2 / Normal) --- */
+  const QUICK_STYLES = {
+    normal:  { fontSize: '', fontWeight: '', fontStyle: '' },
+    title:   { fontSize: '18pt', fontWeight: '700', fontStyle: '' },
+    heading: { fontSize: '14pt', fontWeight: '700', fontStyle: '' },
+    subhead: { fontSize: '11pt', fontWeight: '700', fontStyle: '' },
+    caption: { fontSize: '7pt',  fontWeight: '400', fontStyle: 'italic' },
+  };
+  function applyQuickStyle(name) {
+    const def = QUICK_STYLES[name];
+    if (!def) return;
+    ensureSelection();
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    if (range.collapsed) { toast && toast('Select some text first.'); return; }
+    const span = document.createElement('span');
+    if (def.fontSize)   span.style.fontSize   = def.fontSize;
+    if (def.fontWeight) span.style.fontWeight = def.fontWeight;
+    if (def.fontStyle)  span.style.fontStyle  = def.fontStyle;
+    try {
+      const frag = range.extractContents();
+      span.appendChild(frag);
+      range.insertNode(span);
+      const nr = document.createRange();
+      nr.selectNodeContents(span);
+      sel.removeAllRanges(); sel.addRange(nr);
+    } catch (e) {}
+    if (name === 'normal') {
+      // Strip any inline size/weight/style from spans in the selection
+      ensureSelection();
+      const range2 = sel.getRangeAt(0);
+      const root = range2.commonAncestorContainer.nodeType === 1
+                  ? range2.commonAncestorContainer : range2.commonAncestorContainer.parentNode;
+      root.querySelectorAll('*').forEach(el => {
+        if (range2.intersectsNode(el) && el.style) {
+          el.style.fontSize = '';
+          el.style.fontWeight = '';
+          el.style.fontStyle = '';
+          if (!el.getAttribute('style')) el.removeAttribute('style');
+        }
+      });
+    }
+    saveSelection();
+    schedulePreview();
+  }
+
+  /* --- Hyperlink (Ctrl+K) --- */
+  function insertHyperlink() {
+    ensureSelection();
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    const seed = range.toString() || 'https://';
+    const url = prompt('Hyperlink URL:', seed.startsWith('http') ? seed : 'https://');
+    if (!url) return;
+    exec('createLink', url);
+    // make the new <a> open in a new tab when clicked from the printed doc
+    setTimeout(() => {
+      editor.querySelectorAll('a:not([target])').forEach(a => a.setAttribute('target','_blank'));
+    }, 10);
+  }
+
+  /* --- Insert image from file picker (logos, QR PNGs) --- */
+  function insertImageFromFile() {
+    ensureSelection();
+    const file = document.createElement('input');
+    file.type = 'file'; file.accept = 'image/*';
+    file.onchange = () => {
+      const f = file.files[0]; if (!f) return;
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const dataUrl = ev.target.result;
+        // Insert as inline data-URL so the image survives save/load
+        editor.focus();
+        if (!restoreSelection()) {
+          // place at end if no saved selection
+          const r = document.createRange();
+          r.selectNodeContents(editor); r.collapse(false);
+          const s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+        }
+        const html = `<img src="${dataUrl}" alt="" style="max-width: 100%; max-height: 60mm; vertical-align: middle;">`;
+        document.execCommand('insertHTML', false, html);
+        saveSelection();
+        schedulePreview();
+      };
+      reader.readAsDataURL(f);
+    };
+    file.click();
+  }
+
+  /* --- Insert special symbol from a curated list --- */
+  const SYMBOLS = ['₹','$','€','£','¥','₨','¢','%','‰','°','™','®','©','§','¶','★','☆','✓','✗','→','←','↑','↓','•','·','–','—','…','«','»','“','”','‘','’','№','¼','½','¾','±','×','÷','≈','≠','≤','≥','½','⅓','⅔','¼','¾','✔','✘','™','®','©'];
+  function insertSymbolPicker() {
+    const choice = prompt('Pick a symbol — type the character or one of:\n' + SYMBOLS.join(' '));
+    if (!choice) return;
+    editor.focus();
+    restoreSelection();
+    document.execCommand('insertText', false, choice);
+    saveSelection();
+    schedulePreview();
+  }
+
+  /* --- Horizontal rule --- */
+  function insertHr() {
+    editor.focus();
+    restoreSelection();
+    document.execCommand('insertHorizontalRule');
+    saveSelection();
+    schedulePreview();
+  }
+
+  /* --- Format painter: capture style on arm, apply on next selection --- */
+  let painterStyle = null;
+  function armFormatPainter() {
+    const btn = toolbar.querySelector('button[data-cmd="formatPainter"]');
+    ensureSelection();
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    let node = range.startContainer;
+    if (node.nodeType === 3) node = node.parentNode;
+    if (!node || !editor.contains(node)) return;
+    const cs = getComputedStyle(node);
+    painterStyle = {
+      fontFamily:   cs.fontFamily,
+      fontSize:     cs.fontSize,
+      fontWeight:   cs.fontWeight,
+      fontStyle:    cs.fontStyle,
+      color:        cs.color,
+      backgroundColor: cs.backgroundColor,
+      textDecoration: cs.textDecorationLine,
+    };
+    btn.classList.add('is-armed');
+    toast && toast('Format painter armed — now select target text to paint style.');
+  }
+  function applyFormatPainter() {
+    if (!painterStyle) return false;
+    ensureSelection();
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return true;
+    const range = sel.getRangeAt(0);
+    if (range.collapsed) return true;
+    const span = document.createElement('span');
+    Object.assign(span.style, painterStyle);
+    // Skip transparent / inherit defaults so we don't pollute
+    if (span.style.backgroundColor === 'rgba(0, 0, 0, 0)') span.style.backgroundColor = '';
+    if (span.style.textDecoration === 'none') span.style.textDecoration = '';
+    try {
+      const frag = range.extractContents();
+      span.appendChild(frag);
+      range.insertNode(span);
+      const nr = document.createRange();
+      nr.selectNodeContents(span);
+      sel.removeAllRanges(); sel.addRange(nr);
+    } catch (e) {}
+    painterStyle = null;
+    toolbar.querySelector('button[data-cmd="formatPainter"]').classList.remove('is-armed');
+    saveSelection();
+    schedulePreview();
+    return true;
+  }
+  // When format painter is armed and user clicks/selects in editor, paint.
+  editor.addEventListener('mouseup', () => {
+    if (painterStyle) applyFormatPainter();
+  });
+
+  /* --- Select all (constrained to editor) --- */
+  function selectAllInEditor() {
+    editor.focus();
+    const r = document.createRange();
+    r.selectNodeContents(editor);
+    const s = window.getSelection();
+    s.removeAllRanges(); s.addRange(r);
+    saveSelection();
+    refreshButtonStates();
+  }
+
   /* --- Click + change handlers --- */
   toolbar.querySelectorAll('button[data-cmd]').forEach(btn => {
     btn.addEventListener('click', () => {
       const cmd = btn.dataset.cmd;
       switch (cmd) {
-        case 'incFontPt':   return bumpPt(+1);
-        case 'decFontPt':   return bumpPt(-1);
-        case 'case-upper':  return transformCase('upper');
-        case 'case-lower':  return transformCase('lower');
-        case 'case-title':  return transformCase('title');
+        case 'incFontPt':       return bumpPt(+1);
+        case 'decFontPt':       return bumpPt(-1);
+        case 'case-upper':      return transformCase('upper');
+        case 'case-lower':      return transformCase('lower');
+        case 'case-title':      return transformCase('title');
         case 'clear-highlight': return clearHighlight();
+        case 'createLink':      return insertHyperlink();
+        case 'insertImage':     return insertImageFromFile();
+        case 'insertSymbol':    return insertSymbolPicker();
+        case 'insertHr':        return insertHr();
+        case 'formatPainter':   return armFormatPainter();
+        case 'selectAll':       return selectAllInEditor();
         default: exec(cmd);
       }
     });
@@ -2009,9 +2140,10 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
       if (cmd === 'setFontPt')        setFontPt(val);
       else if (cmd === 'lineHeight')  setLineHeight(val);
       else if (cmd === 'fontName')    exec('fontName', val);
+      else if (cmd === 'quickStyle')  applyQuickStyle(val);
       else                            exec(cmd, val);
       // Keep size-pick value visible if it has real numbers; reset
-      // sentinel-only dropdowns (font, lineHeight) so the placeholder reshows
+      // sentinel-only dropdowns (font, lineHeight, quickStyle) so the placeholder reshows
       if (cmd !== 'setFontPt') sel.value = '';
     });
   });
@@ -2056,6 +2188,8 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     if (e.key === 'Tab') {
       e.preventDefault();
       exec(e.shiftKey ? 'outdent' : 'indent');
+    } else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault(); insertHyperlink();
     } else if ((e.ctrlKey || e.metaKey) && e.key === ']') {
       e.preventDefault(); bumpPt(+1);
     } else if ((e.ctrlKey || e.metaKey) && e.key === '[') {
@@ -2063,13 +2197,61 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     }
   });
 
-  /* --- Strip pasted formatting beyond our safe subset --- */
+  /* --- Strip pasted formatting; also handle pasted images from clipboard --- */
   editor.addEventListener('paste', e => {
+    const cd = e.clipboardData || window.clipboardData;
+    if (!cd) return;
+    // Image paste (screenshot, copied logo, etc.)
+    const items = cd.items ? [...cd.items] : [];
+    const imgItem = items.find(it => it.type && it.type.startsWith('image/'));
+    if (imgItem) {
+      e.preventDefault();
+      const file = imgItem.getAsFile();
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const html = `<img src="${ev.target.result}" alt="" style="max-width:100%; max-height:60mm; vertical-align:middle;">`;
+        document.execCommand('insertHTML', false, html);
+        saveSelection(); schedulePreview();
+      };
+      reader.readAsDataURL(file);
+      return;
+    }
+    // Text/HTML paste (sanitized)
     e.preventDefault();
-    const html = (e.clipboardData || window.clipboardData).getData('text/html');
-    const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+    const html = cd.getData('text/html');
+    const text = cd.getData('text/plain');
     if (html) document.execCommand('insertHTML', false, sanitizeHTML(html));
     else      document.execCommand('insertText', false, text);
+  });
+
+  /* --- Drag-and-drop image files into the editor --- */
+  editor.addEventListener('dragover', e => {
+    if (e.dataTransfer && [...e.dataTransfer.items || []].some(i => i.type.startsWith('image/'))) {
+      e.preventDefault();
+      editor.style.outline = '2px dashed #2a7f4f';
+    }
+  });
+  editor.addEventListener('dragleave', () => { editor.style.outline = ''; });
+  editor.addEventListener('drop', e => {
+    editor.style.outline = '';
+    const files = [...(e.dataTransfer.files || [])].filter(f => f.type.startsWith('image/'));
+    if (!files.length) return;
+    e.preventDefault();
+    files.forEach(file => {
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const html = `<img src="${ev.target.result}" alt="" style="max-width:100%; max-height:60mm; vertical-align:middle;">`;
+        // place caret where the drop happened
+        const r = document.caretRangeFromPoint
+                  ? document.caretRangeFromPoint(e.clientX, e.clientY)
+                  : null;
+        if (r) { const s = window.getSelection(); s.removeAllRanges(); s.addRange(r); }
+        else editor.focus();
+        document.execCommand('insertHTML', false, html);
+        saveSelection(); schedulePreview();
+      };
+      reader.readAsDataURL(file);
+    });
   });
 })();
 
