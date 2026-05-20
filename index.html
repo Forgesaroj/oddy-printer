@@ -179,7 +179,7 @@
   .rt-toolbar .rt-font  { min-width: 110px; max-width: 140px; font-size: 12px; }
   .rt-toolbar .rt-size-input { width: 48px; text-align: center; }
   .rt-toolbar .rt-size-pick  { width: 56px; }
-  .rt-toolbar .rt-line       { width: 64px; }
+  .rt-toolbar .rt-line       { min-width: 100px; }
   .rt-toolbar .rt-style      { min-width: 90px; }
   /* Format painter active state */
   .rt-toolbar button[data-cmd="formatPainter"].is-armed {
@@ -656,16 +656,25 @@
                 <button type="button" data-cmd="insertOrderedList"   title="Numbering">1. ☰</button>
                 <button type="button" data-cmd="outdent"        title="Decrease indent (Shift+Tab)">⇤</button>
                 <button type="button" data-cmd="indent"         title="Increase indent (Tab)">⇥</button>
-                <select data-cmd="lineHeight" title="Line spacing" class="rt-line">
-                  <option value="">↕</option>
-                  <option value="1">1.0</option>
+              </div>
+
+              <!-- Group: Line + paragraph spacing -->
+              <div class="rt-group" title="Line &amp; paragraph spacing">
+                <select data-cmd="lineHeight" title="Line spacing (between lines within a paragraph)" class="rt-line">
+                  <option value="">Line ⇕</option>
+                  <option value="1">Single (1.0)</option>
                   <option value="1.15">1.15</option>
                   <option value="1.25">1.25</option>
-                  <option value="1.5">1.5</option>
-                  <option value="2">2.0</option>
+                  <option value="1.5">1½ (1.5)</option>
+                  <option value="1.75">1.75</option>
+                  <option value="2">Double (2.0)</option>
                   <option value="2.5">2.5</option>
-                  <option value="3">3.0</option>
+                  <option value="3">Triple (3.0)</option>
+                  <option value="__custom__">Custom…</option>
                 </select>
+                <button type="button" data-cmd="spaceBeforePara" title="Add space before paragraph">¶▲</button>
+                <button type="button" data-cmd="spaceAfterPara"  title="Add space after paragraph">¶▼</button>
+                <button type="button" data-cmd="clearParaSpacing" title="Remove paragraph spacing">¶✕</button>
               </div>
 
               <!-- Group: Insert (hyperlink, image, symbol) -->
@@ -1911,25 +1920,65 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     schedulePreview();
   }
 
-  /* --- Line height: wrap selected block(s) --- */
-  function setLineHeight(val) {
-    editor.focus();
+  /* --- Block walker: every block-level node intersecting the selection
+     (or the immediate block ancestor if the range is collapsed). --- */
+  const BLOCK_RE = /^(P|DIV|LI|UL|OL|BLOCKQUOTE|H[1-6])$/;
+  function blocksInSelection() {
+    ensureSelection();
     const sel = window.getSelection();
-    if (!sel.rangeCount) return;
+    if (!sel.rangeCount) return [];
     const range = sel.getRangeAt(0);
-    let node = range.startContainer;
-    if (node.nodeType === 3) node = node.parentNode;
-    // Walk up to a block-level ancestor inside the editor
-    while (node && node !== editor && !/^(P|DIV|LI|UL|OL|BLOCKQUOTE)$/.test(node.tagName || '')) {
-      node = node.parentNode;
+    const out = new Set();
+
+    // Always include the start ancestor (handles a click without selection).
+    let startNode = range.startContainer;
+    if (startNode.nodeType === 3) startNode = startNode.parentNode;
+    while (startNode && startNode !== editor && !BLOCK_RE.test(startNode.tagName || '')) {
+      startNode = startNode.parentNode;
     }
-    if (node && node !== editor) {
-      node.style.lineHeight = val;
-      schedulePreview();
+    if (startNode && startNode !== editor) out.add(startNode);
+
+    // Walk every block in the editor and add the ones the range touches.
+    editor.querySelectorAll('p, div, li, ul, ol, blockquote, h1, h2, h3, h4, h5, h6').forEach(el => {
+      if (range.intersectsNode(el)) out.add(el);
+    });
+    return [...out];
+  }
+
+  /* --- Line spacing: apply to every block in the selection (or the
+     containing block on a collapsed caret). Falls back to wrapping the
+     selection in a span if no block ancestor exists yet. --- */
+  function setLineHeight(val) {
+    const blocks = blocksInSelection();
+    if (blocks.length) {
+      blocks.forEach(b => { b.style.lineHeight = val; });
     } else {
-      // wrap selection in span
+      // No block ancestor — wrap selection in a span so the value sticks.
       wrapSelectionStyle('lineHeight', val);
     }
+    saveSelection();
+    schedulePreview();
+  }
+
+  /* --- Paragraph spacing: margin-top / margin-bottom on each block. --- */
+  function setParaSpacing(side, value) {
+    const blocks = blocksInSelection();
+    if (!blocks.length) { toast && toast('Click inside a paragraph first.'); return; }
+    const prop = side === 'before' ? 'marginTop' : 'marginBottom';
+    blocks.forEach(b => { b.style[prop] = value; });
+    saveSelection();
+    schedulePreview();
+  }
+  function clearParaSpacing() {
+    const blocks = blocksInSelection();
+    blocks.forEach(b => {
+      b.style.marginTop    = '';
+      b.style.marginBottom = '';
+      b.style.lineHeight   = '';
+      if (!b.getAttribute('style')) b.removeAttribute('style');
+    });
+    saveSelection();
+    schedulePreview();
   }
 
   /* --- Quick-style presets (Word's Title / Heading 1 / 2 / Normal) --- */
@@ -2127,6 +2176,9 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
         case 'insertHr':        return insertHr();
         case 'formatPainter':   return armFormatPainter();
         case 'selectAll':       return selectAllInEditor();
+        case 'spaceBeforePara': return setParaSpacing('before', '0.5em');
+        case 'spaceAfterPara':  return setParaSpacing('after',  '0.5em');
+        case 'clearParaSpacing':return clearParaSpacing();
         default: exec(cmd);
       }
     });
@@ -2138,7 +2190,14 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
       const val = sel.value;
       if (!val) return;
       if (cmd === 'setFontPt')        setFontPt(val);
-      else if (cmd === 'lineHeight')  setLineHeight(val);
+      else if (cmd === 'lineHeight') {
+        if (val === '__custom__') {
+          const v = prompt('Line spacing (e.g. 1.4 or 18px):', '1.5');
+          if (v) setLineHeight(v.trim());
+        } else {
+          setLineHeight(val);
+        }
+      }
       else if (cmd === 'fontName')    exec('fontName', val);
       else if (cmd === 'quickStyle')  applyQuickStyle(val);
       else                            exec(cmd, val);
