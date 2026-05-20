@@ -616,8 +616,8 @@
                   <option>40</option><option>48</option><option>56</option>
                   <option>64</option><option>72</option>
                 </select>
-                <button type="button" data-cmd="incFontPt"   title="Grow font (Ctrl+])">A▲</button>
-                <button type="button" data-cmd="decFontPt"   title="Shrink font (Ctrl+[)">A▼</button>
+                <button type="button" data-cmd="incFontPt"   title="Grow font (Ctrl+])"><span style="font-size:14px;font-weight:700;">A</span>↑</button>
+                <button type="button" data-cmd="decFontPt"   title="Shrink font (Ctrl+[)"><span style="font-size:9px;font-weight:700;">a</span>↓</button>
               </div>
 
               <!-- Group: Bold / italic / underline / case -->
@@ -672,8 +672,8 @@
                   <option value="3">Triple (3.0)</option>
                   <option value="__custom__">Custom…</option>
                 </select>
-                <button type="button" data-cmd="spaceBeforePara" title="Add space before paragraph">¶▲</button>
-                <button type="button" data-cmd="spaceAfterPara"  title="Add space after paragraph">¶▼</button>
+                <button type="button" data-cmd="spaceBeforePara" title="Add space BEFORE paragraph">↥¶</button>
+                <button type="button" data-cmd="spaceAfterPara"  title="Add space AFTER paragraph">¶↧</button>
                 <button type="button" data-cmd="clearParaSpacing" title="Remove paragraph spacing">¶✕</button>
               </div>
 
@@ -1843,16 +1843,85 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
     const px = parseFloat(getComputedStyle(node).fontSize);
     return Math.round(px * 0.75 * 10) / 10;          // px → pt, 1 decimal
   }
+  /* If the caret is just sitting in the editor (no selection), find the
+     word under the caret and select it so size changes are visible. */
+  function expandRangeToWord(range) {
+    if (!range || range.startContainer.nodeType !== 3) return null;
+    const node = range.startContainer;
+    const text = node.textContent;
+    let start = range.startOffset, end = range.startOffset;
+    while (start > 0      && /\S/.test(text[start - 1])) start--;
+    while (end < text.length && /\S/.test(text[end]))    end++;
+    if (start === end) return null;
+    const r = document.createRange();
+    r.setStart(node, start);
+    r.setEnd(node, end);
+    return r;
+  }
+
+  /* Walk up to the nearest ancestor INSIDE the editor that has an
+     explicit inline font-size. Returns the element or null. */
+  function findExplicitSizeAncestor() {
+    ensureSelection();
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return null;
+    let node = sel.getRangeAt(0).startContainer;
+    if (node.nodeType === 3) node = node.parentNode;
+    while (node && node !== editor) {
+      if (node.style && node.style.fontSize) return node;
+      node = node.parentNode;
+    }
+    return null;
+  }
+
   function setFontPt(pt) {
     const num = parseFloat(pt);
     if (!isFinite(num) || num <= 0) return;
+    ensureSelection();
+    const sel = window.getSelection();
+    if (!sel.rangeCount) { wrapSelectionStyle('fontSize', num + 'pt'); return; }
+    const range = sel.getRangeAt(0);
+
+    // Collapsed caret: prefer mutating the ancestor span/element so the
+    // change is visible immediately. If no explicit-size ancestor, expand
+    // the caret to the word under it before wrapping.
+    if (range.collapsed) {
+      const anc = findExplicitSizeAncestor();
+      if (anc) {
+        anc.style.fontSize = num + 'pt';
+        syncSizeInput(num);
+        saveSelection();
+        schedulePreview();
+        return;
+      }
+      const word = expandRangeToWord(range);
+      if (word) {
+        sel.removeAllRanges(); sel.addRange(word);
+      }
+      // If still nothing to wrap, wrapSelectionStyle handles the zero-width
+      // case (next-typed-character will be in the new size).
+    }
     wrapSelectionStyle('fontSize', num + 'pt');
-    // sync size input
+    syncSizeInput(num);
+  }
+
+  function syncSizeInput(num) {
     const inp = toolbar.querySelector('.rt-size-input');
     if (inp) inp.value = num;
   }
+
   function bumpPt(delta) {
-    const cur = getCurrentPt();
+    // Read size from explicit ancestor if present (so successive bumps
+    // stack predictably), else from the computed style at the caret.
+    ensureSelection();
+    const anc = findExplicitSizeAncestor();
+    let cur;
+    if (anc) {
+      cur = parseFloat(anc.style.fontSize);
+      if (isNaN(cur)) cur = getCurrentPt();
+    } else {
+      cur = getCurrentPt();
+    }
     const next = Math.max(4, Math.min(200, cur + delta));
     setFontPt(next);
   }
