@@ -1,44 +1,52 @@
 # Oddy Sticker Printer
 
-> 🇳🇵 **If you've ever wasted 3 sticker sheets fighting Microsoft Word
-> over a 2mm margin, this tool is for you.**
+> 🇳🇵 **Precise A4 sticker printing without fighting Word margins.**
 
 **👉 Open it now: https://forgesaroj.github.io/oddy-printer/**
 
 Free. Browser-based. All 21 Oddy A4 SKUs pre-configured.
-No install. No signup. No cost. Works offline once loaded.
-Made in Nepal for the MRP labelling system that every shop now needs.
+No install. No signup. No cost.
+Made in Nepal, for anyone printing labels on Oddy sheets.
 
 ![Tool screenshot](https://img.shields.io/badge/status-live-success) ![Made in Nepal](https://img.shields.io/badge/made%20in-Nepal%20%F0%9F%87%B3%F0%9F%87%B5-red) ![License](https://img.shields.io/badge/license-MIT-blue) ![No signup](https://img.shields.io/badge/signup-not%20required-brightgreen)
 
 ---
 
-## The problem this solves
+## Why this tool exists
 
-**As of April 28, 2026, the Nepal Government has made printed MRP
-(Maximum Retail Price) labels compulsory on every product sold in
-the country** — under the Consumer Protection Act 2019, Section 6(3).
-Customs offices in Birgunj, Bhairahawa, Biratnagar, Rasuwagadhi,
-Nepalgunj and Kakarbhitta started stopping shipments without MRP
-stickers, stranding over 1,000 containers at border points within
-days of the rule taking effect. Writing prices by hand with a marker
-is no longer legally acceptable.
+Nepal's Consumer Protection Act, 2075 contains product-labelling
+requirements, including maximum retail price information. In April 2026,
+stricter enforcement for imported finished goods brought renewed attention
+to those requirements.
 
-So now every shopkeeper, every retailer, every small business in
-Nepal is suddenly facing the same headache:
+The initial customs-point enforcement temporarily disrupted cargo clearance.
+Revised instructions subsequently allowed importers to declare the MRP at
+customs and attach the required labels before selling the goods.
 
-- You buy a packet of Oddy stickers — **ST-24, ST-33, ST-48, ST-65**, whichever
-- You open MS Word and hunt for "Avery L7159" or "33 labels per sheet"
-- You guess at margins. You print a test page. Labels are 2mm off.
-- You waste 3 sheets (₹500–1000 down the drain). You try again.
-- Eventually you give up and tell your supplier to print them somehow.
+For businesses using pre-cut Oddy A4 sticker sheets, the practical problem
+remains simple: aligning content with each sheet's exact label dimensions in
+a general-purpose document editor can require repeated margin and spacing
+adjustments.
 
-This is happening **every single day** in shops across the country —
-and the printed-label requirement isn't going away.
+Oddy Printer makes that process easier:
 
-This tool fixes it. **Pick your Oddy code → type your content → print.**
-The exact margins and pitches from the official Oddy spec sheet are
-already baked in for all 21 SKUs.
+**Choose the Oddy sheet code → enter or import the content → preview → print.**
+
+The dimensions for all 21 supported sheet formats are preconfigured in the tool.
+
+> Oddy Printer helps prepare printable labels. It is not legal advice and does
+> not guarantee that a label contains every field required for a particular
+> product.
+
+### Sources
+
+- Consumer Protection Act, 2075:
+  https://repository.lawcommission.gov.np/np/category/documents/prevailing-law/statutes-acts/उपभोक्ता-संरक्षण-ऐन-२०७५/
+- Department of Commerce enforcement notice:
+  https://doc.gov.np/content/359/regarding-making-the-maximum-retail-price--mrp-2082-12-30/
+- Contemporary report covering the initial enforcement and subsequent
+  relaxation:
+  https://english.nepalnews.com/s/business/mrp-mandate-and-the-border-trade-freeze-everything-you-need-to-know/
 
 ## What you can do with it
 
@@ -64,7 +72,7 @@ already baked in for all 21 SKUs.
   uppercase, line height, auto-shrink-to-fit
 - ✅ **CSV bulk fill** — paste a spreadsheet column and fill 84 different
   labels in one click
-- ✅ **Works offline** once the page has loaded once
+- ✅ **Single-page browser tool** with no external runtime dependencies; it can be downloaded and opened locally
 - ✅ **No tracking, no analytics, no servers** — everything runs in your browser
 
 ---
@@ -146,7 +154,7 @@ as JSON to move it between machines.
 
 If you know someone in Nepal who runs a shop, a clinic, a courier
 service, or any small business that prints labels — **send them this
-link**. They'll save hours every month and stop wasting sticker
+link**. It's free, and it may save them some time and a few sticker
 sheets.
 
 > साथीहरूलाई share गर्नुहोस् 🙏
