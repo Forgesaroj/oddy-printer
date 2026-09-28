@@ -1,5 +1,12 @@
-# Document Batch And Lot Serialization Rules
+# Industrial Lot Number Serialization Specification
 
-Standardized alphanumeric batch code layout for consumer goods.
+## Standardized Lot Serialization Schemes
 
-*Documented for Oddy Printer Utility.*
+Consistent batch numbering is mandatory for traceability and product recall compliance.
+
+### Recommended Alphanumeric Schema
+Format: `PP-YYMMDD-LLL`
+- `PP`: Plant / Facility Code (e.g. `KTM` for Kathmandu, `CHW` for Chitwan).
+- `YYMMDD`: Date of manufacture.
+- `LLL`: Production line sequence number (001–999).
+
